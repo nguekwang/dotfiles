@@ -455,7 +455,7 @@ setup_system_config() {
     install_paru || log error "paru install failed"
 }
 setup_chrome() {
-    link user user/browser/chrome-flags.conf "$path_config/chrome-flags.conf"
+    link user home/browser/chrome-flags.conf "$path_config/chrome-flags.conf"
     link sudo etc/chrome-policy-restore-tabs.json "$path_etc/opt/chrome/policies/managed/restore-tabs.json"
     case "$(command -v google-chrome-stable || true)" in
         ?*)
@@ -477,7 +477,7 @@ setup_chrome() {
     esac
 }
 setup_paru() {
-    link user user/paru/paru.conf "$path_config/paru/paru.conf"
+    link user home/paru/paru.conf "$path_config/paru/paru.conf"
 }
 setup_git_ssh() {
     link user etc/sshconfig "$HOME/.ssh/config"
@@ -508,12 +508,12 @@ setup_git_remote() {
     git remote add gitea "$uri_remote_gitea" 2>/dev/null || true
 }
 setup_shell() {
-    link user user/.zshrc "$HOME/.zshrc"
+    link user home/.zshrc "$HOME/.zshrc"
 }
 setup_nvim() {
     local path_nvim path_lazy_nvim
-    link user user/nvim/init.lua "$path_config/nvim/init.lua"
-    link user user/nvim/lazylock.json "$path_config/nvim/lazylock.json"
+    link user home/nvim/init.lua "$path_config/nvim/init.lua"
+    link user home/nvim/lazylock.json "$path_config/nvim/lazylock.json"
     case "$(probe_path "$path_config/nvim/lazy-lock.json")" in
         symlink) rm -f "$path_config/nvim/lazy-lock.json" ;;
     esac
@@ -539,19 +539,19 @@ setup_nvim() {
 }
 setup_fcitx5() {
     local name_fcitx5_conf
-    link user user/fcitx5/profile "$path_config/fcitx5/profile"
-    link user user/fcitx5/config "$path_config/fcitx5/config"
+    link user home/fcitx5/profile "$path_config/fcitx5/profile"
+    link user home/fcitx5/config "$path_config/fcitx5/config"
     for name_fcitx5_conf in chttrans classicui clipboard hangul pinyin punctuation spell unicode waylandim; do
-        link user "user/fcitx5/$name_fcitx5_conf.conf" "$path_config/fcitx5/conf/$name_fcitx5_conf.conf"
+        link user "home/fcitx5/$name_fcitx5_conf.conf" "$path_config/fcitx5/conf/$name_fcitx5_conf.conf"
     done
 }
 setup_hypr() {
-    link user user/hypr/hyprland.lua "$path_config/hypr/hyprland.lua"
-    link user user/hypr/mako "$path_config/mako/config"
-    link user user/hypr/foot.ini "$path_config/foot/foot.ini"
-    link user user/hypr/waybar-config "$path_config/waybar/config"
-    link user user/hypr/waybar-style.css "$path_config/waybar/style.css"
-    link user user/browser/qutebrowser.py "$path_config/qutebrowser/config.py"
+    link user home/hypr/hyprland.lua "$path_config/hypr/hyprland.lua"
+    link user home/hypr/mako "$path_config/mako/config"
+    link user home/hypr/foot.ini "$path_config/foot/foot.ini"
+    link user home/hypr/waybar-config "$path_config/waybar/config"
+    link user home/hypr/waybar-style.css "$path_config/waybar/style.css"
+    link user home/browser/qutebrowser.py "$path_config/qutebrowser/config.py"
 }
 setup_claude() {
     link user .claude/plugins "$HOME/.claude/plugins"
@@ -592,9 +592,10 @@ setup_python() {
     uv tool install -q --upgrade --with "$name_pot_plugin" yt-dlp >/dev/null 2>&1 || true
 }
 setup_git_config() {
-    link user user/.gitconfig "$HOME/.gitconfig"
-    link user user/.githooks "$HOME/.githooks"
-    link user user/.gitmessage "$HOME/.gitmessage"
+    link user home/.gitconfig "$HOME/.gitconfig"
+    link user home/.gitignore-global "$HOME/.gitignore-global"
+    link user home/.githooks "$HOME/.githooks"
+    link user home/.gitmessage "$HOME/.gitmessage"
 }
 setup_potoken() {
     local path_node path_npm path_pot_repo name_pot_tag
