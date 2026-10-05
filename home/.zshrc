@@ -42,7 +42,7 @@ fi
 eval "$(direnv hook zsh)"
 
 # bun completions
-[ -s "/home/yunai/.bun/_bun" ] && source "/home/yunai/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 ## Basic command
 a c "cd $HOME/pjt-build-complete-works/ && claude --chrome"
