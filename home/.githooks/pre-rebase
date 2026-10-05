@@ -1,0 +1,6 @@
+#!/bin/sh
+# Blocks every "git rebase" invocation at the tool level. This workflow is
+# merge-only (see .claude/skills/rules-version-control in this repository);
+# integrate branches with "git merge --no-ff" instead.
+echo "error: git rebase is disabled (merge-only workflow; use git merge --no-ff instead)" >&2
+exit 1

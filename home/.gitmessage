@@ -1,0 +1,10 @@
+# Subject: one line, English, imperative mood ("Add", not "Added").
+#
+# Body: state the change as a record, not as a diff summary.
+#   - What changed.
+#   - Why: the background that made the change necessary.
+#   - Main files or areas touched.
+#
+# A merge commit follows the same shape. "Merge branch 'x'" alone is
+# incomplete and the commit-msg hook rejects it.
+# See .claude/skills/rules-version-control in this repository.

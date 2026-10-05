@@ -1,0 +1,55 @@
+# This is Git's per-user configuration file.
+[user]
+	name = "nguekwang"
+	email = "nguekwang@users.noreply.github.com"
+
+[core]
+	editor = nvim
+	pager = nvim -R
+	ignorecase = false
+	excludesFile = ~/.gitignore-global
+	hooksPath = ~/.githooks
+
+[init]
+	defaultBranch = main
+
+[status]
+	renames = true
+
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+
+[merge]
+	ff = false
+
+[pull]
+	ff = only
+	rebase = false
+
+[branch]
+	autoSetupRebase = never
+	sort = -committerdate
+
+[tag]
+	sort = -version:refname
+
+[column]
+	ui = auto
+
+[push]
+	default = current
+
+[commit]
+	template = ~/.gitmessage
+	verbose = true
+
+[safe]
+	directory = /sdcard/solid-life
+
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process

@@ -1,0 +1,27 @@
+#!/bin/sh
+# Rejects any push that is not a fast-forward of the branch already on the
+# remote. A rewritten history (rebase, amend, reset) can only reach the remote
+# through such a push, so blocking it here closes the path that the pre-rebase
+# hook leaves open. This workflow is merge-only and never rewrites published
+# history (see .claude/skills/rules-version-control in this repository).
+#
+# Deleting a remote branch and creating a new one are both fast-forward-safe
+# and stay allowed. "git push --no-verify" bypasses this hook, which is the
+# documented escape hatch for the one case the policy allows: a rewrite the
+# history itself forces, after the user has said to do it.
+name_zero="0000000000000000000000000000000000000000"
+enum_status=0
+while read -r name_local_ref hash_local name_remote_ref hash_remote; do
+    # Deleting the remote branch: nothing to fast-forward.
+    case "$hash_local" in "$name_zero"|"") continue ;; esac
+    # Creating the branch on the remote: no prior history to lose.
+    case "$hash_remote" in "$name_zero"|"") continue ;; esac
+    if git merge-base --is-ancestor "$hash_remote" "$hash_local"; then
+        continue
+    fi
+    printf 'error: non-fast-forward push to %s\n' "$name_remote_ref" >&2
+    printf '       %s is not an ancestor of %s\n' "$hash_remote" "$hash_local" >&2
+    printf '       merge the remote branch in instead of rewriting it\n' >&2
+    enum_status=1
+done
+exit "$enum_status"

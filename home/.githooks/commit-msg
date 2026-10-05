@@ -1,0 +1,31 @@
+#!/bin/sh
+# Rejects a merge commit left with git's default "Merge branch 'x'" message.
+# The merge commit is this repository's only change record, so a default
+# message means the record is missing (see .claude/skills/rules-version-control
+# in this repository).
+#
+# Scope: this hook is installed globally through core.hooksPath, but the rule
+# is this repository's, so it applies only where that skill file is present.
+path_top="$(git rev-parse --show-toplevel 2>/dev/null || printf '')"
+case "$path_top" in
+    '') exit 0 ;;
+esac
+[ -f "$path_top/.claude/skills/rules-version-control/SKILL.md" ] || exit 0
+[ -f "$path_top/.git/MERGE_HEAD" ] || exit 0
+
+# Everything the author actually wrote: comments and blank lines removed.
+text_body="$(grep -v '^#' "$1" | grep -v '^[[:space:]]*$')"
+count_line="$(printf '%s\n' "$text_body" | grep -c .)"
+case "$text_body" in
+    'Merge branch '*|'Merge remote-tracking branch '*|'Merge tag '*)
+        case "$count_line" in
+            1)
+                printf 'error: the merge commit still carries git default message\n' >&2
+                printf '       write the change record into it: what changed, why,\n' >&2
+                printf '       and which files or areas were touched\n' >&2
+                exit 1
+                ;;
+        esac
+        ;;
+esac
+exit 0
