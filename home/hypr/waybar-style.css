@@ -1,0 +1,66 @@
+* {
+    border: none;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 0.95em;
+    font-weight: normal;
+    border-radius: 0;
+    min-height: 0;
+}
+
+/* The whole bar is one pill now -- background and rounding live here instead
+   of per-module, and the config's margin-* insets it from the screen edges
+   so the rounded corners actually show instead of being flush/invisible.
+   border-radius/border match hyprland.lua's decoration.rounding (5px) and
+   general.border_size/col.active_border (1px, #888888) exactly. The `*`
+   selector above sets `border: none` globally, so this has to override it
+   specifically on window#waybar rather than relying on inheritance. */
+window#waybar {
+    background-color: #000000;
+    color: #bbbbbb;
+    border-radius: 5px;
+    border: 1px solid #888888;
+}
+
+/* left */
+#pulseaudio,
+#backlight,
+#network,
+#bluetooth {
+    margin-left: 0.3em;
+}
+
+/* right */
+#cpu,
+#memory,
+#disk,
+#battery {
+  margin-right: 0.3em;
+}
+
+/* common: no per-module background/radius anymore -- they're just text+icon
+   sitting inside the one window#waybar pill, spaced by padding alone. */
+#pulseaudio,
+#backlight,
+#bluetooth,
+#network,
+#clock,
+#cpu,
+#memory,
+#disk,
+#battery {
+    padding: 0.3em 0.8em 0.3em 0.8em;
+    opacity: 0.8;
+}
+
+/* Battery states: black background, dark accent foreground */
+#battery.charging {
+    color: #1a6b1a;
+}
+
+#battery.warning:not(.charging) {
+    color: #8b8b1a;
+}
+
+#battery.critical:not(.charging) {
+    color: #8b1a1a;
+}
