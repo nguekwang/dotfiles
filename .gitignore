@@ -1,0 +1,14 @@
+/*
+!/.claude/
+!/.gitignore
+!/CLAUDE.md
+!/README.md
+!/etc/
+!/home/
+!/media.toml
+!/setup.sh
+
+SECRETS
+.env
+/.claude/settings.local.json
+/.claude/scheduled_tasks.lock
