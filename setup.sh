@@ -134,6 +134,14 @@ manifest_draw() {
     printf '\0338' >/dev/tty
 }
 
+manifest_print() {
+    local entry
+    for entry in $list_step_state; do
+        render_row "${entry%%:*}" "${entry#*:}"
+        printf '\n'
+    done
+}
+
 manifest_set() {
     local entry rebuilt
     rebuilt=""
@@ -165,8 +173,9 @@ status_start() {
 
 status_stop() {
     wave_stop
-    case "$enum_is_tty" in yes) ;; *) return 0 ;; esac
-    printf '\033[1;%dr\033[%d;1H' "$count_status_rows" "$count_status_rows" >/dev/tty
+    case "$count_status_rows" in 0) return 0 ;; esac
+    printf '\033[1;%dr\033[%d;1H\033[J' "$count_status_rows" "$row_manifest_top" >/dev/tty
+    count_status_rows=0
 }
 path_finding=""
 record_finding() {
@@ -181,7 +190,6 @@ log() {
             printf '%s✓%s %s\n' "$esc_green" "$esc_reset" "$message"
             record_finding "info: $message"
             ;;
-        progress) printf '%s→%s %s\n' "$esc_yellow" "$esc_reset" "$message" ;;
         warning)
             printf '%s[WARN]%s %s\n' "$esc_yellow" "$esc_reset" "$message" >&2
             record_finding "warning: $message"
@@ -296,7 +304,6 @@ check_sudo() {
             return 1
             ;;
     esac
-    log progress "sudo: asking for the password once for the system steps..."
     if sudo -v; then
         enum_has_sudo=yes
         return 0
@@ -785,10 +792,7 @@ case "$enum_is_tty" in
 esac
 case "$enum_print_plain" in
     yes)
-        for name_step_spec in $list_step_state; do
-            render_row "${name_step_spec%%:*}" "${name_step_spec#*:}"
-            printf '\n'
-        done
+        manifest_print
         printf '\n'
         ;;
 esac
@@ -798,10 +802,7 @@ path_finding="$path_run/findings"
 status_start
 case "$enum_is_tty:$enum_print_plain" in
     no:no)
-        for name_step_spec in $list_step_state; do
-            render_row "${name_step_spec%%:*}" "${name_step_spec#*:}"
-            printf '\n'
-        done
+        manifest_print
         printf '\n'
         ;;
 esac
@@ -824,6 +825,7 @@ on_interrupt() {
             ;;
     esac
     status_stop
+    manifest_print
     printf '\n%sinterrupted%s\n' "$esc_red" "$esc_reset" >&2
     rm -rf "$path_run"
     exit "$1"
@@ -944,11 +946,9 @@ NEXT: you should act on the line above/')"
     printf '%s%s%s\n' "$esc_yellow" "$out" "$esc_reset"
 }
 
+status_stop
 printf '\n'
-for name_step_spec in $list_step_state; do
-    render_row "${name_step_spec%%:*}" "${name_step_spec#*:}"
-    printf '\n'
-done
+manifest_print
 printf '\n'
 printf 'Total: %d  Success: %d  Failed: %d  Skipped: %d\n' \
     "$count_step_total" "$count_step_success" "$count_step_failed" "$count_step_skipped"
