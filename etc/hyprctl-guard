@@ -1,0 +1,36 @@
+#!/bin/sh
+# System-wide guard for /usr/bin/hyprctl. This file IS /usr/bin/hyprctl (a
+# symlink installed by etc/wrap-hyprctl.hook, a pacman PostTransaction hook
+# on the hyprland package -- see that hook and etc/wrap-hyprctl-install.sh
+# for how it gets put there, and how it survives a `pacman -Syu` upgrade of
+# hyprland, which reinstalls a pristine /usr/bin/hyprctl every time).
+#
+# It drops any `dispatch` call whose arguments mention a workspace, so a
+# workspace can't be switched to or created via hyprctl -- from any user, any
+# script, cron, systemd, or a direct /usr/bin/hyprctl invocation, since this
+# IS the canonical binary path, not a PATH-order trick. Everything else is
+# passed straight through to the real binary, preserved at hyprctl.real next
+# to this file.
+#
+# What this still cannot stop: a program that talks to the Hyprland IPC
+# socket directly instead of through this binary, and Hyprland's own
+# in-process Lua dispatch calls (hyprland.lua's window.open handler bypasses
+# this entirely, since it never shells out to hyprctl).
+#
+# Hardcoded, not derived from $0: $0 is just "hyprctl" when this is reached
+# via PATH lookup, and dirname of that is the wrong directory.
+real_hyprctl="/usr/bin/hyprctl.real"
+
+if [ "$1" = "dispatch" ]; then
+    shift
+    args_lower="$(printf '%s' "$*" | tr '[:upper:]' '[:lower:]')"
+    case "$args_lower" in
+        *workspace*)
+            printf 'hyprctl (guarded): blocked workspace dispatch: %s\n' "$*" >&2
+            exit 1
+            ;;
+    esac
+    exec "$real_hyprctl" dispatch "$@"
+fi
+
+exec "$real_hyprctl" "$@"

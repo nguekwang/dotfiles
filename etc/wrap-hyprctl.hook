@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = hyprland
+
+[Action]
+Description = Re-guarding /usr/bin/hyprctl against workspace dispatch...
+When = PostTransaction
+Exec = /etc/hyprctl-guard-install.sh
