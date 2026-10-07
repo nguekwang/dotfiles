@@ -9,10 +9,6 @@ path_etc="/etc"
 path_lock="${XDG_RUNTIME_DIR:-/tmp}/complete-works.lock"
 name_time_zone="Asia/Tokyo"
 uri_aur="https://aur.archlinux.org/paru.git"
-uri_pot="https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git"
-name_pot_plugin="bgutil-ytdlp-pot-provider"
-name_cookie_browser="${name_cookie_browser:-chrome}"
-path_pot_server="$HOME/bgutil-ytdlp-pot-provider/server"
 esc_red="$(printf '\033[0;31m')"
 esc_green="$(printf '\033[0;32m')"
 esc_yellow="$(printf '\033[1;33m')"
@@ -596,169 +592,12 @@ setup_python() {
     uv tool install -q --upgrade ipython >/dev/null 2>&1 || true
     uv tool install -q --upgrade keras >/dev/null 2>&1 || true
     uv tool install -q --upgrade matplotlib >/dev/null 2>&1 || true
-    uv tool install -q --upgrade --with "$name_pot_plugin" yt-dlp >/dev/null 2>&1 || true
 }
 setup_git_config() {
     link user home/.gitconfig "$HOME/.gitconfig"
     link user home/.gitignore-global "$HOME/.gitignore-global"
     link user home/.githooks "$HOME/.githooks"
     link user home/.gitmessage "$HOME/.gitmessage"
-}
-setup_potoken() {
-    local path_node path_npm path_pot_repo name_pot_tag
-    path_pot_repo="$(dirname "$path_pot_server")"
-    path_node="$(command -v node || true)"
-    path_npm="$(command -v npm || true)"
-    case "$path_node:$path_npm" in
-        ?*:?*) ;;
-        *)
-            case "$enum_has_sudo" in
-                yes) ;;
-                *)
-                    log error "potoken: Node.js missing and sudo unavailable"
-                    return 1
-                    ;;
-            esac
-            sudo pacman -S --needed --noconfirm nodejs npm >/dev/null
-            ;;
-    esac
-    name_pot_tag="$(git ls-remote --tags --refs "$uri_pot" |
-        awk -F/ '{ print $NF }' | sort -V | tail -n 1)"
-    case "$name_pot_tag" in
-        "")
-            log error "potoken: no release tag found"
-            return 1
-            ;;
-    esac
-    case "$(probe_path "$path_pot_repo/.git")" in
-        dir)
-            git -C "$path_pot_repo" fetch -q --tags origin ||
-                log error "potoken: provider fetch failed"
-            case "$(git -C "$path_pot_repo" describe --tags --exact-match 2>/dev/null || true):$(probe_path "$path_pot_server/build/generate_once.js")" in
-                "$name_pot_tag:file")
-                    log info "potoken: already built at $name_pot_tag"
-                    return 0
-                    ;;
-            esac
-            ;;
-        *)
-            git clone -q "$uri_pot" "$path_pot_repo" || {
-                log error "potoken: provider clone failed"
-                return 1
-            }
-            ;;
-    esac
-    git -C "$path_pot_repo" checkout -q "$name_pot_tag" || {
-        log error "potoken: cannot check out $name_pot_tag"
-        return 1
-    }
-    (cd "$path_pot_server" && npm ci --silent && npx --yes tsc) >/dev/null 2>&1 ||
-        log error "potoken: provider build failed"
-    case "$(probe_path "$path_pot_server/build/generate_once.js")" in
-        file)
-            ;;
-        *)
-            log error "potoken: no generate_once.js after the build"
-            return 1
-            ;;
-    esac
-}
-setup_media() {
-    local path_media_toml path_media_base path_media_dir name_media_section \
-          enum_media_kind name_media_id name_media_entry path_media_file \
-          enum_media_state path_cookie_profile
-    path_media_toml="$path_dot/media.toml"
-    case "$(probe_path "$path_media_toml")" in
-        file) ;;
-        *)
-            log error "media: media.toml not found"
-            return 1
-            ;;
-    esac
-    path_media_base="$HOME"
-    grep '^\[' "$path_media_toml" | sed 's/\[\(.*\)\]/\1/' | grep -v '^$' |
-    while IFS= read -r name_media_section; do
-        path_media_dir="$path_media_base/$name_media_section"
-        case "$(probe_path "$path_media_dir")" in
-            dir|symlink)
-                log info "media: $name_media_section already exists"
-                ;;
-            *)
-                mkdir -p "$path_media_dir"
-                ;;
-        esac
-    done
-    case "$(command -v yt-dlp || true)" in
-        "")
-            log error "media: yt-dlp not found, skipping downloads"
-            return 0
-            ;;
-    esac
-    set --
-    case "$(probe_path "$path_pot_server/build/generate_once.js")" in
-        file)
-            set -- "$@" --extractor-args \
-                "youtubepot-bgutilscript:server_home=$path_pot_server"
-            ;;
-        *)
-            log warning "media: no PO token provider, downloading without one"
-            ;;
-    esac
-    case "$name_cookie_browser" in
-        chrome) path_cookie_profile="$path_config/google-chrome" ;;
-        chromium) path_cookie_profile="$path_config/chromium" ;;
-        brave) path_cookie_profile="$path_config/BraveSoftware/Brave-Browser" ;;
-        vivaldi) path_cookie_profile="$path_config/vivaldi" ;;
-        firefox) path_cookie_profile="$HOME/.mozilla/firefox" ;;
-        *) path_cookie_profile="$path_config/$name_cookie_browser" ;;
-    esac
-    case "$(probe_path "$path_cookie_profile")" in
-        dir|symlink)
-            set -- "$@" --cookies-from-browser "$name_cookie_browser"
-            ;;
-        *)
-            log warning "media: no $name_cookie_browser profile, downloading without cookies"
-            ;;
-    esac
-    awk -F' *= *' '
-        /^\[/ { name_section = substr($0, 2, index($0, "]") - 2); next }
-        /^[^#[:space:]]/ && NF == 2 {
-            gsub(/"/, "", $2)
-            printf "%s\t%s\t%s\n", name_section, $2, $1
-        }
-    ' "$path_media_toml" |
-    while IFS="$(printf '\t')" read -r enum_media_kind name_media_id name_media_entry; do
-        path_media_dir="$path_media_base/$enum_media_kind"
-        enum_media_state=absent
-        for path_media_file in "$path_media_dir/$name_media_entry".*; do
-            case "$(probe_path "$path_media_file")" in
-                file) enum_media_state=present ;;
-            esac
-        done
-        case "$enum_media_state" in
-            present)
-                log info "media: $name_media_entry already downloaded"
-                continue
-                ;;
-        esac
-        case "$enum_media_kind" in
-            audio)
-                yt-dlp -q "$@" --extract-audio --audio-format mp3 --audio-quality 0 \
-                    -o "$path_media_dir/$name_media_entry.%(ext)s" \
-                    "https://youtu.be/$name_media_id" ||
-                    log error "media: $name_media_entry failed"
-                ;;
-            video)
-                yt-dlp -q "$@" -f "bv*+ba/b" \
-                    -o "$path_media_dir/$name_media_entry.%(ext)s" \
-                    "https://youtu.be/$name_media_id" ||
-                    log error "media: $name_media_entry failed"
-                ;;
-            *)
-                log error "media: unknown section '$enum_media_kind' for $name_media_id"
-                ;;
-        esac
-    done
 }
 list_step_label="package/pkg \
     system/account system/time sysconfig/system_config \
@@ -767,10 +606,10 @@ list_step_label="package/pkg \
     userconfig/shell \
     userconfig/nvim userconfig/fcitx5 userconfig/hypr \
     userconfig/claude package/node package/python \
-    userconfig/git_config package/potoken media/media"
+    userconfig/git_config"
 list_step_sudo="pkg account time system_config"
 list_step_interactive="account"
-list_step_irreversible="pkg account time node python potoken media git_ssh chrome"
+list_step_irreversible="pkg account time node python git_ssh chrome"
 
 claim_lock || {
     log error "setup: another run is still active, and two runs fight over pacman and the terminal"

@@ -37,8 +37,7 @@ same code path finding most of its work already done.
 - the user account, timezone, NTP and the `wheel` sudoers drop-in are read
   before they are written
 - the SSH key is generated only when `~/.ssh/id_ed25519` is absent
-- a media entry is skipped once a file for it exists
-- the PO token provider rebuilds only when its release tag moved
+- a tool is installed when it is absent and upgraded when it is already there
 
 This is the property that makes the script worth having: run it on a fresh
 install, on a machine set up a year ago, or twice in a row by mistake, and the
@@ -110,7 +109,7 @@ At the end, on stdout:
 [✓] package/pkg
 [✘] userconfig/nvim
 
-Total: 18  Success: 17  Failed: 1  Skipped: 0
+Total: 16  Success: 15  Failed: 1  Skipped: 0
 
 INFO: pkg: installed
 INFO: git-ssh: key generated
@@ -134,8 +133,7 @@ It also holds a lock file at `$XDG_RUNTIME_DIR/complete-works.lock`, or under
 stays behind on purpose; see below.
 
 Outside the repository a run creates symlinks under `$XDG_CONFIG_HOME` and
-`/etc`, an SSH key, `/etc/sudoers.d/10-wheel`, a clone of the PO token
-provider, and the media listed in `media.toml`.
+`/etc`, an SSH key and `/etc/sudoers.d/10-wheel`.
 
 A pre-existing real file at a link target is overwritten. The repository is the
 source of truth, so no `.bak` copies are kept.
@@ -185,7 +183,5 @@ once, up front, and only if a step that needs it is going to run.
 | `userconfig/hypr` | Hyprland, mako, foot, waybar, qutebrowser |
 | `userconfig/claude` | plugins, hooks, settings, keybindings |
 | `package/node` | Bun, gemini-cli, codex |
-| `package/python` | uv, ipython, keras, matplotlib, yt-dlp |
+| `package/python` | uv, ipython, keras, matplotlib |
 | `userconfig/git_config` | `.gitconfig`, `.githooks`, `.gitmessage` |
-| `package/potoken` | builds the YouTube PO token provider at its latest tag |
-| `media/media` | creates media directories, downloads `media.toml` entries |
