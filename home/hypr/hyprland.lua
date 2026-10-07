@@ -261,17 +261,5 @@ hl.bind(main .. " + comma", hl.dsp.workspace.toggle_special("qute"),
 hl.bind(main .. " + SHIFT + semicolon", hl.dsp.exec_cmd(browser_alt),
   { description = "Browser (qutebrowser)" })
 hl.bind(main .. " + Return", hl.dsp.exec_cmd(terminal), { description = "Terminal" })
-
 hl.bind(main .. " + m", hl.dsp.window.fullscreen(), { description = "Full screen" })
 hl.bind(main .. " + q", hl.dsp.window.close(), { description = "Close window" })
-
-hl.bind(
-  main .. " + mouse:272",
-  hl.dsp.window.drag(),
-  { mouse = true, description = "Move window" }
-)
-hl.bind(
-  main .. " + mouse:273",
-  hl.dsp.window.resize(),
-  { mouse = true, description = "Resize window" }
-)
