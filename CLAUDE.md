@@ -107,7 +107,7 @@ At the end, on stdout:
 [✓] package/pkg
 [✘] userconfig/nvim
 
-Total: 16  Success: 15  Failed: 1  Skipped: 0
+Total: 15  Success: 14  Failed: 1  Skipped: 0
 
 INFO: pkg: installed
 INFO: git-ssh: key generated
@@ -180,7 +180,6 @@ once, up front, and only if a step that needs it is going to run.
 | `userconfig/nvim` | `init.lua`, lock file, `Lazy! restore` |
 | `userconfig/fcitx5` | profile, config, 9 addon confs |
 | `userconfig/hypr` | Hyprland, mako, foot, waybar, qutebrowser |
-| `userconfig/claude` | plugins, hooks, settings, keybindings |
 | `package/node` | Bun, gemini-cli, codex |
 | `package/python` | uv, ipython, keras, matplotlib |
 | `userconfig/git_config` | `.gitconfig`, `.githooks`, `.gitmessage` |

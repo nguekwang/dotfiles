@@ -9,13 +9,12 @@ name_time_zone="Asia/Tokyo"
 uri_aur="https://aur.archlinux.org/paru.git"
 uri_repo="https://github.com/nguekwang/dotfiles.git"
 uri_push="git@github.com:nguekwang/dotfiles.git"
-esc_red="$(printf '\033[0;31m')"
-esc_green="$(printf '\033[0;32m')"
+esc_red="$(printf '\033[1;31m')"
+esc_green="$(printf '\033[1;32m')"
 esc_yellow="$(printf '\033[1;33m')"
-esc_blue="$(printf '\033[0;34m')"
+esc_blue="$(printf '\033[1;34m')"
 esc_reset="$(printf '\033[0m')"
-esc_cyan="$(printf '\033[0;36m')"
-esc_dim="$(printf '\033[2m')"
+esc_cyan="$(printf '\033[1;36m')"
 enum_is_tty=no
 enum_sleep_frac=no
 count_status_rows=0
@@ -31,6 +30,7 @@ list_step_state=""
 row_manifest_top=0
 row_wave=0
 pid_wave=""
+pid_keepalive=""
 path_run=""
 pid_main=$$
 [ -t 1 ] && [ -t 2 ] && command -v tput >/dev/null 2>&1 && enum_is_tty=yes
@@ -50,7 +50,7 @@ render_row() {
     case "$1" in
         done)    printf '%s[✓]%s %s' "$esc_green" "$esc_reset" "$2" ;;
         failed)  printf '%s[✘]%s %s' "$esc_red" "$esc_reset" "$2" ;;
-        skipped) printf '%s[-] %s%s' "$esc_dim" "$2" "$esc_reset" ;;
+        skipped) printf '%s[-] %s%s' "$esc_blue" "$2" "$esc_reset" ;;
         *)       printf '[ ] %s' "$2" ;;
     esac
 }
@@ -74,16 +74,14 @@ report_failure() {
 wave_frame() {
     awk -v s="$1" -v p="$2" 'BEGIN {
         n = length(s)
-        crest = p % (n + 6)
+        crest = p % (n + 10)
+        split("231 159 123 87 51 45 38 32 31 30", ramp, " ")
         out = ""
         for (i = 1; i <= n; i++) {
             d = i - crest
             if (d < 0) d = -d
-            if (d == 0)      out = out "\033[1;96m"
-            else if (d == 1) out = out "\033[0;96m"
-            else if (d == 2) out = out "\033[0;36m"
-            else             out = out "\033[2;36m"
-            out = out substr(s, i, 1)
+            if (d > 9) d = 9
+            out = out "\033[1;38;5;" ramp[d + 1] "m" substr(s, i, 1)
         }
         printf "%s\033[0m", out
     }'
@@ -98,7 +96,7 @@ wave_start() {
         while kill -0 "$pid_main" 2>/dev/null; do
             printf '\0337\033[%d;1H\033[2K  %s %s%s%s\0338' \
                 "$row_wave" "$(wave_frame "$1" "$phase")" \
-                "$esc_dim" "$(render_elapsed "$time_start")" "$esc_reset" >/dev/tty
+                "$esc_cyan" "$(render_elapsed "$time_start")" "$esc_reset" >/dev/tty
             phase=$((phase + 1))
             sleep 0.08
         done
@@ -307,6 +305,25 @@ check_sudo() {
     log error "sudo: $name_user is in wheel but sudo refused it; as root: EDITOR=nvim visudo and uncomment %wheel ALL=(ALL:ALL) ALL"
     return 1
 }
+refresh_sudo() {
+    case "$(id -u)" in 0) return 0 ;; esac
+    sudo -n true 2>/dev/null && return 0
+    wave_stop
+    printf '%s%s: sudo password expired, enter it again%s\n' "$esc_yellow" "$name_step" "$esc_reset" >/dev/tty
+    sudo -v </dev/tty >/dev/tty 2>&1
+}
+
+keepalive_sudo() {
+    case "$(id -u)" in 0) return 0 ;; esac
+    (
+        while kill -0 "$pid_main" 2>/dev/null; do
+            sudo -n -v 2>/dev/null || true
+            sleep 50
+        done
+    ) &
+    pid_keepalive=$!
+}
+
 install_paru() {
     local path_paru path_work
     path_paru="$(command -v paru || true)"
@@ -547,12 +564,6 @@ setup_hypr() {
     link user home/hypr/waybar-style.css "$path_config/waybar/style.css"
     link user home/browser/qutebrowser.py "$path_config/qutebrowser/config.py"
 }
-setup_claude() {
-    link user .claude/plugins "$HOME/.claude/plugins"
-    link user .claude/hooks "$HOME/.claude/hooks"
-    link user .claude/settings.json "$HOME/.claude/settings.json"
-    link user .claude/keybindings.json "$HOME/.claude/keybindings.json"
-}
 setup_node() {
     local path_bun
     path_bun="$(command -v bun || true)"
@@ -589,6 +600,7 @@ setup_git_config() {
     link user home/.gitignore-global "$HOME/.gitignore-global"
     link user home/.githooks "$HOME/.githooks"
     link user home/.gitmessage "$HOME/.gitmessage"
+    link user home/.gitconfig-paru "$HOME/.gitconfig-paru"
 }
 list_step_label="package/pkg repo/git_sync \
     system/account system/time sysconfig/system_config \
@@ -596,9 +608,9 @@ list_step_label="package/pkg repo/git_sync \
     repo/git_ssh \
     userconfig/shell \
     userconfig/nvim userconfig/fcitx5 userconfig/hypr \
-    userconfig/claude package/node package/python \
+    package/node package/python \
     userconfig/git_config"
-list_step_sudo="pkg account time system_config"
+list_step_sudo="pkg account time system_config chrome"
 list_step_interactive="account"
 list_step_irreversible="pkg git_sync account time node python git_ssh chrome"
 
@@ -664,7 +676,7 @@ enum_interrupted=no
 trap 'on_interrupt 130' INT
 trap 'on_interrupt 143' TERM
 trap 'on_interrupt 129' HUP
-trap 'status_stop; rm -rf "$path_run"' EXIT
+trap 'status_stop; case "$pid_keepalive" in "") ;; *) kill "$pid_keepalive" 2>/dev/null || true ;; esac; rm -rf "$path_run"' EXIT
 manifest_draw
 
 enum_has_sudo=yes
@@ -676,7 +688,7 @@ for name_step in $list_step_sudo; do
 done
 case "$enum_needs_sudo" in
     no) ;;
-    *) check_sudo || log error "sudo: unavailable, skipping: $list_step_sudo" ;;
+    *) check_sudo && keepalive_sudo || log error "sudo: unavailable, skipping: $list_step_sudo" ;;
 esac
 
 for name_label in $list_step_label; do
@@ -684,6 +696,9 @@ for name_label in $list_step_label; do
     index_step=$((index_step + 1))
     name_step_current="$name_label"
     count_step_total=$((count_step_total + 1))
+    case "$enum_has_sudo: $list_step_sudo " in
+        yes:*" $name_step "*) refresh_sudo || enum_has_sudo=no ;;
+    esac
     case "$enum_has_sudo: $list_step_sudo " in
         no:*" $name_step "*)
             log warning "$name_label: skipped, sudo unavailable"
@@ -773,7 +788,7 @@ no blank line between pairs.'
 NEXT: you should act on the line above/')"
             ;;
     esac
-    printf '%s%s%s\n' "$esc_yellow" "$out" "$esc_reset"
+    printf '%s\n' "$out" | sed "s/^WARN:/${esc_yellow}WARN:${esc_reset}/"
 }
 
 status_stop

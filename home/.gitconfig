@@ -10,6 +10,9 @@
 	excludesFile = ~/.gitignore-global
 	hooksPath = ~/.githooks
 
+[includeIf "gitdir:~/.cache/paru/"]
+	path = ~/.gitconfig-paru
+
 [init]
 	defaultBranch = main
 

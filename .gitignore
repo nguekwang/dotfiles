@@ -1,5 +1,4 @@
 /*
-!/.claude/
 !/.gitignore
 !/CLAUDE.md
 !/README.md
@@ -9,5 +8,3 @@
 
 SECRETS
 .env
-/.claude/settings.local.json
-/.claude/scheduled_tasks.lock
