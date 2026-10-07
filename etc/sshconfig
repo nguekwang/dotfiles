@@ -185,7 +185,6 @@ Host special-host
     PasswordAuthentication no
     KbdInteractiveAuthentication no
     GSSAPIAuthentication no
-    UsePAM yes
 
 ################################################################################
 # CATCH-ALL (Must be last)
