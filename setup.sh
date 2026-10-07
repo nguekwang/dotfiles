@@ -1,14 +1,14 @@
 #!/bin/sh
 set -e
-name_git_user="${name_git_user:-nguekwang}"
-name_git_repo="${name_git_repo:-complete-works}"
 name_main_user="${name_main_user:-nguekwang}"
-path_dot="$(pwd)"
+path_dot="$HOME/dotfiles"
 path_config="${XDG_CONFIG_HOME:-$HOME/.config}"
 path_etc="/etc"
 path_lock="${XDG_RUNTIME_DIR:-/tmp}/complete-works.lock"
 name_time_zone="Asia/Tokyo"
 uri_aur="https://aur.archlinux.org/paru.git"
+uri_repo="https://github.com/nguekwang/dotfiles.git"
+uri_push="git@github.com:nguekwang/dotfiles.git"
 esc_red="$(printf '\033[0;31m')"
 esc_green="$(printf '\033[0;32m')"
 esc_yellow="$(printf '\033[1;33m')"
@@ -495,20 +495,11 @@ setup_git_ssh() {
     log info "git-ssh: key generated"
     cat "$HOME/.ssh/id_ed25519.pub"
 }
-setup_git_remote() {
-    case "$(git remote)" in
-        *github*)
-            return 0
-            ;;
+setup_git_sync() {
+    case "$(probe_path "$path_dot/.git")" in
+        dir) git -C "$path_dot" pull -q --ff-only ;;
+        *) git clone -q -c remote.origin.pushurl="$uri_push" "$uri_repo" "$path_dot" ;;
     esac
-    uri_remote_github="git@github.com:$name_git_user/$name_git_repo.git"
-    uri_remote_gitlab="git@gitlab.com:$name_git_user/$name_git_repo.git"
-    uri_remote_codeberg="git@codeberg.org:$name_git_user/$name_git_repo.git"
-    uri_remote_gitea="git@gitea.com:$name_git_user/$name_git_repo.git"
-    git remote add github "$uri_remote_github" 2>/dev/null || true
-    git remote add gitlab "$uri_remote_gitlab" 2>/dev/null || true
-    git remote add codeberg "$uri_remote_codeberg" 2>/dev/null || true
-    git remote add gitea "$uri_remote_gitea" 2>/dev/null || true
 }
 setup_shell() {
     link user home/.zshrc "$HOME/.zshrc"
@@ -599,17 +590,17 @@ setup_git_config() {
     link user home/.githooks "$HOME/.githooks"
     link user home/.gitmessage "$HOME/.gitmessage"
 }
-list_step_label="package/pkg \
+list_step_label="package/pkg repo/git_sync \
     system/account system/time sysconfig/system_config \
     userconfig/paru userconfig/chrome \
-    repo/git_ssh repo/git_remote \
+    repo/git_ssh \
     userconfig/shell \
     userconfig/nvim userconfig/fcitx5 userconfig/hypr \
     userconfig/claude package/node package/python \
     userconfig/git_config"
 list_step_sudo="pkg account time system_config"
 list_step_interactive="account"
-list_step_irreversible="pkg account time node python git_ssh chrome"
+list_step_irreversible="pkg git_sync account time node python git_ssh chrome"
 
 claim_lock || {
     log error "setup: another run is still active, and two runs fight over pacman and the terminal"

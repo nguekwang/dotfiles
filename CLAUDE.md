@@ -20,8 +20,6 @@ A few environment variables override defaults when you need them:
 | Variable | Default |
 | --- | --- |
 | `name_main_user` | `nguekwang` |
-| `name_git_user` | `nguekwang` |
-| `name_git_repo` | `complete-works` |
 | `name_cookie_browser` | `chrome` |
 | `XDG_CONFIG_HOME` | `$HOME/.config` |
 
@@ -124,9 +122,10 @@ one-to-one otherwise.
 
 ## What it writes
 
-Nothing inside this repository. Working state — collected findings, per-step
-stderr, per-step rollback journals — lives in a `mktemp -d` directory and is
-removed on exit, Ctrl-C included.
+Inside the repository, only what `git pull` brings in; on a machine without
+`~/dotfiles`, the repository itself is cloned there first. Working state —
+collected findings, per-step stderr, per-step rollback journals — lives in a
+`mktemp -d` directory and is removed on exit, Ctrl-C included.
 
 It also holds a lock file at `$XDG_RUNTIME_DIR/complete-works.lock`, or under
 `/tmp` when that is unset. That one
@@ -170,13 +169,13 @@ once, up front, and only if a step that needs it is going to run.
 | Step | Does |
 | --- | --- |
 | `package/pkg` | `base-devel`, `git`, `zsh`, `neovim` |
+| `repo/git_sync` | `git pull` in `~/dotfiles`, or `git clone` it there |
 | `system/account` | main user, shell, `wheel`, password, sudoers drop-in |
 | `system/time` | timezone and NTP |
 | `sysconfig/system_config` | `/etc` config, hyprctl guard, builds `paru` |
 | `userconfig/paru` | `paru.conf` |
 | `userconfig/chrome` | Chrome flags, managed policy, AUR install |
 | `repo/git_ssh` | `~/.ssh/config`, ed25519 key |
-| `repo/git_remote` | github / gitlab / codeberg / gitea remotes |
 | `userconfig/shell` | `.zshrc` |
 | `userconfig/nvim` | `init.lua`, lock file, `Lazy! restore` |
 | `userconfig/fcitx5` | profile, config, 9 addon confs |
