@@ -1,0 +1,22 @@
+#!/bin/sh
+# Run every test/*-test.sh and keep going past a failing file, so one failure
+# cannot hide the rest; list the failed files at the end and exit non-zero.
+path_test="$(cd "$(dirname "$0")" && pwd)"
+count_total=0
+list_failed=""
+for path_file in "$path_test"/*-test.sh; do
+    [ -f "$path_file" ] || continue
+    [ "$(basename "$path_file")" = base-test.sh ] && continue
+    count_total=$((count_total + 1))
+    printf '==> %s\n' "$(basename "$path_file")"
+    sh "$path_file" || list_failed="$list_failed $(basename "$path_file")"
+done
+if [ "$count_total" -eq 0 ]; then
+    printf 'no tests found in %s\n' "$path_test" >&2
+    exit 1
+fi
+if [ -n "$list_failed" ]; then
+    printf '\nfailed:%s\n' "$list_failed" >&2
+    exit 1
+fi
+printf '\nall %d test files passed\n' "$count_total"

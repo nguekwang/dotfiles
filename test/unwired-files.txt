@@ -1,0 +1,6 @@
+# path<TAB>reason: files under user/ and etc/ that setup.sh deliberately does not deploy.
+etc/mirrorlist	reference copy; reflector or pacman-mirrorlist owns /etc/pacman.d/mirrorlist
+etc/modprobe.d	empty placeholder, nothing to deploy yet
+etc/sshconfig	commented template of ssh_config options, kept as documentation
+etc/CLAUDE.md	directory documentation, not a dotfile, per files-and-repository/dotfile-deployment
+user/CLAUDE.md	directory documentation, not a dotfile, per files-and-repository/dotfile-deployment
