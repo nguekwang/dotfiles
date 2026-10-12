@@ -1,0 +1,15 @@
+#!/bin/sh
+path_test="$(cd "$(dirname "$0")" && pwd)"
+count_total=0
+list_failed=""
+for path_file in "$path_test"/*-test.sh; do
+    [ -f "$path_file" ] || continue
+    name_file="$(basename "$path_file")"
+    [ "$name_file" = base-test.sh ] && continue
+    count_total=$((count_total + 1))
+    printf '==> %s\n' "$name_file"
+    sh "$path_file" || list_failed="$list_failed $name_file"
+done
+[ "$count_total" -gt 0 ] || { printf 'no tests found in %s\n' "$path_test" >&2; exit 1; }
+[ -z "$list_failed" ] || { printf '\nfailed:%s\n' "$list_failed" >&2; exit 1; }
+printf '\nall %d test files passed\n' "$count_total"

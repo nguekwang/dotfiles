@@ -5,6 +5,7 @@
 !/etc/
 !/home/
 !/setup.sh
+!/test/
 
 SECRETS
 .env

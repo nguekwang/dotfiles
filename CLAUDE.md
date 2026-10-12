@@ -159,6 +159,13 @@ download files cannot be undone — they are declared in
 `list_step_irreversible`, and when one fails the run says so plainly rather
 than pretending to clean up.
 
+## Tests
+
+`./test/all` checks that `setup.sh` and the files it links still agree: every
+step has its function and its row below, every `link` source exists, and every
+file under `home/` and `etc/` is linked. It reads the checkout only. See
+[test/CLAUDE.md](test/CLAUDE.md).
+
 ## Requirements
 
 Arch Linux, and either root or a user in the `wheel` group. `sudo` is asked for
