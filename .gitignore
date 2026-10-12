@@ -5,6 +5,10 @@
 !/etc/
 !/home/
 !/setup.sh
+!/test/
+!/.claude/
 
 SECRETS
 .env
+__pycache__/
+*.pyc

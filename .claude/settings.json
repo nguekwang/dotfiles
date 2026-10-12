@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/check-dotfile-wiring.py\"",
+            "timeout": 65,
+            "statusMessage": "Checking dotfile deployment"
+          }
+        ]
+      }
+    ]
+  }
+}
