@@ -1,25 +1,19 @@
 # test
 
-Checks that the repository's deployment path is intact, runnable on any machine with `sh`, and without touching the machine. Modeled on omarchy's `test/` (a runner that keeps going past a failing suite, TAP-style `ok` / `not ok` lines, exit on the first failed assertion within a file), reduced to what a dotfiles repository needs.
-
-## Layout
-
-| File | Role |
-| --- | --- |
-| `all` | Runner: executes every `*-test.sh` here, reports the failed ones at the end, exits non-zero if any failed |
-| `base-test.sh` | Sourced library: `ROOT`, `pass`, `fail`, `skip` |
-| `deployment-test.sh` | `setup.sh` parses; every `link_*` helper it calls is defined; every link source exists; every dotfile under `user/` and `etc/` is wired into `setup.sh` or listed in `unwired-files.txt` |
-| `migrations-test.sh` | Every migration follows the contract in `migrations/CLAUDE.md` |
-| `unwired-files.txt` | Files under `user/` and `etc/` that `setup.sh` deliberately does not deploy, one per line with the reason on the same line after a tab |
-
-## Running
+Checks that `setup.sh` and the files it links still agree, without touching the
+machine. POSIX `sh`, reads the checkout only.
 
 ```sh
 ./test/all
 ```
 
-Every test is POSIX sh and reads the checkout only; no test writes outside `mktemp -d`.
+| File | Role |
+| --- | --- |
+| `all` | runs every `*-test.sh`, keeps going past a failure, exits non-zero if any failed |
+| `base-test.sh` | sourced by each test: `path_root`, `path_setup`, `pass`, `fail` |
+| `deployment-test.sh` | `setup.sh` parses; `link` and `probe_path` exist; every step in `list_step_label` has a `setup_` function and a row in the `CLAUDE.md` steps table; the other `list_step_*` lists name only known steps; every `link` source exists; every file under `home/` and `etc/` is linked |
 
-## Adding a test
-
-Create `test/<area>-test.sh`, start it with `. "$(dirname "$0")/base-test.sh"`, and it is picked up by `all`. Assert an invariant, not a snapshot, so unrelated edits do not fail it.
+A test prints `ok - <what>`, or `not ok - <what>` on stderr and exits at the
+first failure. A new area is `test/<area>-test.sh`, starting with
+`. "$(dirname "$0")/base-test.sh"`; `all` picks it up. Assert an invariant, not
+a snapshot.
