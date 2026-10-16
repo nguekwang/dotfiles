@@ -184,6 +184,7 @@ once, up front, and only if a step that needs it is going to run.
 | `userconfig/chrome` | Chrome flags, managed policy, AUR install |
 | `repo/git_ssh` | `~/.ssh/config`, ed25519 key |
 | `userconfig/shell` | `.zshrc` |
+| `userconfig/claude` | `home/claude/settings.json` → `~/.claude/settings.json` (shared preferences and permissions; project hooks stay in each repository) |
 | `userconfig/nvim` | `init.lua`, lock file, `Lazy! restore` |
 | `userconfig/fcitx5` | profile, config, 9 addon confs |
 | `userconfig/hypr` | Hyprland, mako, foot, waybar, qutebrowser |

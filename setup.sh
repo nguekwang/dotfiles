@@ -21,7 +21,7 @@ list_prep_label="prep/check prep/git repo/git_sync sysconfig/pacman_config \
 list_step_label="system/account system/time sysconfig/system_config \
     userconfig/paru_conf userconfig/chrome \
     repo/git_ssh \
-    userconfig/shell userconfig/nvim userconfig/fcitx5 userconfig/hypr \
+    userconfig/shell userconfig/claude userconfig/nvim userconfig/fcitx5 userconfig/hypr \
     userconfig/git_config"
 
 count_status_rows=0
@@ -240,6 +240,10 @@ setup_git_ssh() {
 
 setup_shell() {
     link user home/.zshrc "$HOME/.zshrc"
+}
+
+setup_claude() {
+    link user home/claude/settings.json "$HOME/.claude/settings.json"
 }
 
 setup_nvim() {
