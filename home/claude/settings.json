@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sudo pacman *)",
+      "Bash(pm *)"
+    ],
+    "deny": [],
+    "defaultMode": "auto"
+  },
+  "model": "sonnet",
+  "voice": {
+    "enabled": true,
+    "mode": "tap"
+  },
+  "theme": "auto",
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true,
+  "fast-mode": false
+}
