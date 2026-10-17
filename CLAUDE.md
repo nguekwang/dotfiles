@@ -166,6 +166,15 @@ step has its function and its row below, every `link` source exists, and every
 file under `home/` and `etc/` is linked. It reads the checkout only. See
 [test/CLAUDE.md](test/CLAUDE.md).
 
+## Machine
+
+Arch Linux. Packages come from `pacman`, the AUR through `paru -S`; `apt`, `brew`,
+`dnf` and `yum` cannot run here. Wayland with Hyprland; Waybar, fcitx5, espanso.
+Terminal `foot`, shell Zsh, editor Neovim with lazy.nvim. Screenshot `grim`,
+recording `wf-recorder`. Keyboard HHKB. Every configuration file lives in `home/`
+or `etc/` of this repository and reaches a machine only through `setup.sh`: a new
+dotfile with no `setup.sh` entry reaches no machine.
+
 ## Requirements
 
 Arch Linux, and either root or a user in the `wheel` group. `sudo` is asked for
