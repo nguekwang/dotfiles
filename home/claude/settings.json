@@ -58,6 +58,8 @@
       "Bash(git log *)",
       "Bash(npm run lint)",
       "Bash(npm run test *)"
+      "Bash(sudo pacman *)",
+      "Bash(pm *)"
     ],
     "ask": [
       "Bash(git push *)",
@@ -80,15 +82,58 @@
   },
   "useAutoModeDuringPlan": true,
   "skipAutoPermissionPrompt": true,
-  "anchorSoFar": true,
   "permissions": {
-    "allow": [
-      "Bash(sudo pacman *)",
-      "Bash(pm *)"
+    "defaultMode": "auto",
+    "ask": [
+      "Bash(git push *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr merge *)",
+      "Bash(npm publish *)",
+      "Bash(dangerouslyDisableSandbox:true)"
     ],
-    "deny": [],
-    "defaultMode": "auto"
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)"
+    ]
   },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": true,
+    "filesystem": {
+      "denyRead": ["~/.gnupg", "~/.config/gcloud"]
+    },
+    "credentials": {
+      "files": [
+        { "path": "~/.ssh", "mode": "deny" },
+        { "path": "~/.aws", "mode": "deny" },
+        { "path": "~/.netrc", "mode": "deny" },
+        { "path": "~/.docker/config.json", "mode": "deny" }
+      ],
+      "envVars": [
+        { "name": "GITHUB_TOKEN", "mode": "deny" },
+        { "name": "GH_TOKEN", "mode": "deny" },
+        { "name": "NPM_TOKEN", "mode": "deny" },
+        { "name": "ANTHROPIC_API_KEY", "mode": "deny" },
+        { "name": "OPENAI_API_KEY", "mode": "deny" },
+        { "name": "AWS_SECRET_ACCESS_KEY", "mode": "deny" }
+      ]
+    },
+    "network": {
+      "allowedDomains": [
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "github.com",
+        "codeload.github.com",
+        "objects.githubusercontent.com"
+      ]
+    }
+  "anchorSoFar": true,
   "voice": {
     "enabled": true,
     "mode": "tap"
