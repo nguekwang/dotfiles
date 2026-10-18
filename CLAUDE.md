@@ -1,4 +1,4 @@
-# complete-works
+# dotfiles
 
 Machine setup for Arch Linux. One POSIX `sh` script, no arguments, safe to run
 as many times as you like.
@@ -127,7 +127,7 @@ Inside the repository, only what `git pull` brings in; on a machine without
 collected findings, per-step stderr, per-step rollback journals — lives in a
 `mktemp -d` directory and is removed on exit, Ctrl-C included.
 
-It also holds a lock file at `$XDG_RUNTIME_DIR/complete-works.lock`, or under
+It also holds a lock file at `$XDG_RUNTIME_DIR/dotfiles.lock`, or under
 `/tmp` when that is unset. That one
 stays behind on purpose; see below.
 
