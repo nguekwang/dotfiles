@@ -14,10 +14,8 @@ esc_green="$(printf '\033[1;32m')"
 esc_yellow="$(printf '\033[1;33m')"
 esc_reset="$(printf '\033[0m')"
 
-# Preparation: installs every tool. The first failure stops the whole run.
 list_prep_label="prep/check prep/git repo/git_sync sysconfig/pacman_config \
     package/packages package/aur package/node package/python"
-# Configuration: assumes the tools exist. A failure here does not stop the rest.
 list_step_label="system/account system/time sysconfig/system_config \
     userconfig/paru_conf userconfig/chrome \
     repo/git_ssh \
@@ -34,17 +32,6 @@ pid_keepalive=""
 path_run=""
 path_setuplog=""
 
-# Nothing is rolled back: whatever a step changed stays, even if it fails.
-#
-# Steps report through stderr, which goes to the setup log:
-#   printf 'info: ...\n' >&2      shown in the final INFO list
-#   printf 'warning: ...\n' >&2   shown in the final WARN list
-#   printf 'error: ...\n' >&2     shown in the final ERROR list
-
-# ================================================================ helpers
-
-# link <user|sudo> <path under dotfiles> <destination>
-# Replaces the destination with a symlink to the dotfile.
 link() {
     local src="$path_dot/$2" dst="$3" cmd_sudo=""
     case "$1" in sudo) cmd_sudo=sudo ;; esac
@@ -56,8 +43,6 @@ link() {
     $cmd_sudo ln -sfn "$src" "$dst"
 }
 
-# Runs on every exit: stops the sudo keepalive, frees the status line,
-# prints the report and removes the run directory.
 on_exit() {
     local text
     case "$pid_keepalive" in ?*) kill "$pid_keepalive" 2>/dev/null || true ;; esac
@@ -85,8 +70,6 @@ on_exit() {
     esac
     rm -rf "$path_run"
 }
-
-# ================================================================ preparation
 
 setup_check() {
     missing=""
@@ -176,8 +159,6 @@ setup_python() {
     esac
     uv tool install -q --upgrade ipython --with keras --with matplotlib
 }
-
-# ================================================================ configuration
 
 setup_account() {
     path_shell="$(command -v zsh)"
@@ -285,8 +266,6 @@ setup_git_config() {
     link user home/.gitconfig-paru "$HOME/.gitconfig-paru"
 }
 
-# ================================================================ main
-
 printf '\n%s\n\n' "complete-works Setup Script"
 
 case "$(id -u)" in
@@ -318,17 +297,14 @@ done
 path_run="$(mktemp -d "${XDG_RUNTIME_DIR:-/tmp}/setup.XXXXXX")"
 path_setuplog="$path_run/setuplog"
 ( umask 077; : >"$path_setuplog" )
-# The signal traps only make sure on_exit runs; nothing is undone.
 trap 'printf "error: interrupted\n" >>"$path_setuplog"; exit 130' INT
 trap 'printf "error: terminated\n" >>"$path_setuplog"; exit 143' TERM
 trap 'printf "error: hung up\n" >>"$path_setuplog"; exit 129' HUP
 trap on_exit EXIT
 
-# Keep the sudo timestamp fresh so long builds never hit a password prompt.
 while :; do sudo -n -v 2>/dev/null || true; sleep 60; done &
 pid_keepalive=$!
 
-# Reserve the bottom line of the terminal for the status line.
 if [ -t 1 ] && [ -t 2 ]; then
     rows="$(tput lines 2>/dev/null || printf '0')"
     cols="$(tput cols 2>/dev/null || printf '0')"
@@ -355,8 +331,6 @@ for name_label in $list_prep_label $list_step_label; do
             ;;
     esac
 
-    # The step runs as a plain command (never inside if/&&/||), so set -e
-    # stays in force inside it.
     set +e
     ( set -e; "setup_$name_step" ) >/dev/null 2>>"$path_setuplog"
     enum_rc=$?
