@@ -1,14 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
   "model": "opus",
   "fallbackModel": ["sonnet", "haiku"],
-
+  "availableModels": ["opus", "sonnet", "haiku"],
+  "enforceAvailableModels": false,
+  "maxEffortLevel": "max",
   "modelSettings": {
     "claude-opus-5-5": { "effortLevel": "high" },
     "claude-sonnet-5-5": { "effortLevel": "high" },
     "claude-haiku-5-5": { "effortLevel": "medium" }
   },
-
   "modelPicker": {
     "options": [
       { "model": "opus", "label": "Opus", "description": "Main work, design, hard bugs" },
@@ -17,9 +19,15 @@
     ],
     "replaceBuiltInOptions": true
   },
-
+  "modelOverrides": {},
+  "advisorModel": "opus",
+  "fastMode": false,
+  "fastModePerSessionOptIn": false,
   "language": "english",
   "showThinkingSummaries": true,
+  "switchModelsOnFlag": true,
+  "ultracode": false,
+
   "permissions": {
     "defaultMode": "auto",
     "allow": [
@@ -27,47 +35,65 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(npm run lint)",
-      "Bash(npm run test *)",
-      "Bash(sudo pacman *)",
-      "Bash(pm *)"
+      "Bash(npm run test *)"
     ],
     "ask": [
+      "Bash(git push)",
       "Bash(git push *)",
       "Bash(gh pr create *)",
       "Bash(gh pr merge *)",
+      "Bash(gh release *)",
       "Bash(npm publish *)",
-      "Bash(dangerouslyDisableSandbox:true)"
+      "Bash(docker push *)"
     ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
       "Read(~/.config/gcloud/**)",
-      "Read(~/.gnupg/**)"
-    ]
+      "Read(~/.config/gh/**)",
+      "Read(~/.netrc)",
+      "Read(~/.docker/config.json)"
+    ],
+    "additionalDirectories": [],
+    "blockReadsOutsideWorkingDirectories": false,
+    "disableBypassPermissionsMode": "disable"
   },
   "autoMode": {
-    "classifyAllShell": true,
-    "soft_deny": [
-      "$defaults",
-      "Never delete files outside the current repository"
-    ]
+    "environment": ["$defaults"],
+    "allow": ["$defaults"],
+    "soft_deny": ["$defaults", "Never delete files outside the current repository"],
+    "hard_deny": ["$defaults"],
+    "classifyAllShell": true
   },
   "useAutoModeDuringPlan": true,
   "skipAutoPermissionPrompt": true,
+  "skipDangerousModePermissionPrompt": false,
+
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": true,
     "autoAllowBashIfSandboxed": true,
     "allowUnsandboxedCommands": true,
+    "excludedCommands": [],
     "filesystem": {
-      "denyRead": ["~/.gnupg", "~/.config/gcloud"]
+      "allowWrite": [],
+      "denyWrite": [],
+      "denyRead": ["~/.gnupg", "~/.config/gcloud", "~/.config/gh"],
+      "allowRead": [],
+      "disabled": false
     },
+    "ignoreViolations": {},
+    "enableWeakerNestedSandbox": false,
+    "enableWeakerNetworkIsolation": false,
+    "allowAppleEvents": false,
     "credentials": {
       "files": [
         { "path": "~/.ssh", "mode": "deny" },
         { "path": "~/.aws", "mode": "deny" },
+        { "path": "~/.gnupg", "mode": "deny" },
         { "path": "~/.netrc", "mode": "deny" },
         { "path": "~/.docker/config.json", "mode": "deny" }
       ],
@@ -78,7 +104,9 @@
         { "name": "ANTHROPIC_API_KEY", "mode": "deny" },
         { "name": "OPENAI_API_KEY", "mode": "deny" },
         { "name": "AWS_SECRET_ACCESS_KEY", "mode": "deny" }
-      ]
+      ],
+      "allowPlaintextInject": false,
+      "awsPairs": []
     },
     "network": {
       "allowedDomains": [
@@ -87,60 +115,108 @@
         "files.pythonhosted.org",
         "github.com",
         "codeload.github.com",
-        "objects.githubusercontent.com"
-      ]
-    }
-  },
-  "permissions": {
-    "defaultMode": "auto",
-    "ask": [
-      "Bash(dangerouslyDisableSandbox:true)",
-      "Bash(git push *)",
-      "Bash(npm publish *)"
-    ],
-    "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(~/.ssh/**)",
-      "Read(~/.aws/**)",
-      "Read(~/.gnupg/**)"
-    ]
-  },
-  "sandbox": {
-    "enabled": true,
-    "failIfUnavailable": true,
-    "autoAllowBashIfSandboxed": true,
-    "allowUnsandboxedCommands": true,
-    "credentials": {
-      "files": [
-        { "path": "~/.ssh", "mode": "deny" },
-        { "path": "~/.aws", "mode": "deny" },
-        { "path": "~/.gnupg", "mode": "deny" }
+        "*.githubusercontent.com"
       ],
-      "envVars": [
-        { "name": "GITHUB_TOKEN", "mode": "deny" },
-        { "name": "GH_TOKEN", "mode": "deny" },
-        { "name": "NPM_TOKEN", "mode": "deny" },
-        { "name": "ANTHROPIC_API_KEY", "mode": "deny" },
-        { "name": "OPENAI_API_KEY", "mode": "deny" }
-      ]
-    },
-    "network": {
-      "allowedDomains": [
-        "github.com",
-        "*.githubusercontent.com",
-        "registry.npmjs.org",
-        "pypi.org",
-        "files.pythonhosted.org"
-      ]
+      "deniedDomains": [],
+      "strictAllowlist": false,
+      "allowLocalBinding": false,
+      "allowUnixSockets": [],
+      "allowAllUnixSockets": false,
+      "allowMachLookup": []
     }
-  }
-  "anchorSoFar": true,
-  "voice": {
-    "enabled": true,
-    "mode": "tap"
   },
+
+  "autoCompactEnabled": true,
+  "autoMemoryEnabled": true,
+  "claudeMdExcludes": [],
+  "env": {},
+  "fileCheckpointingEnabled": true,
+
+  "askUserQuestionTimeout": "never",
+  "dialogExpiry": "10m",
+  "autoContinueAtUsageLimit": true,
+  "autoScrollEnabled": true,
+  "axScreenReader": false,
+  "bashEditDiffEnabled": true,
+  "companyAnnouncements": [],
+  "defaultShell": "bash",
+  "editorMode": "normal",
+  "emojiCompletionEnabled": true,
+  "footerLinksRegexes": [],
+  "maxProseWidth": 100,
+  "prefersReducedMotion": false,
+  "promptSuggestionEnabled": true,
+  "respectGitignore": true,
+  "respondToBashCommands": true,
+  "showClearContextOnPlanAccept": true,
+  "showTurnDuration": true,
+  "spellcheck": { "enabled": false, "checker": "auto" },
+  "spinnerTipsEnabled": true,
+  "syntaxHighlightingDisabled": false,
+  "terminalProgressBarEnabled": true,
+  "terminalTitleFromRename": true,
   "theme": "auto",
+  "timeFormat": "24-hour",
+  "timeZone": "Asia/Tokyo",
+  "tui": "default",
+  "verbose": false,
+  "viewMode": "default",
+  "vimInsertModeRemaps": {},
+  "voice": { "enabled": true, "mode": "tap", "autoSubmit": false },
+  "wheelScrollAccelerationEnabled": true,
+
+  "attribution": { "sessionUrl": true },
+  "includeGitInstructions": true,
+
+  "hooks": {},
+  "disableAllHooks": false,
+  "allowedHttpHookUrls": [],
+  "httpHookAllowedEnvVars": [],
+  "enableWorkflows": true,
+  "disableWorkflows": false,
+  "workflowKeywordTriggerEnabled": true,
+  "workflowSizeGuideline": "medium",
+
+  "enabledPlugins": {},
+  "extraKnownMarketplaces": {},
+  "pluginConfigs": {},
+  "prependPlugins": [],
+  "appendPlugins": [],
+  "skillOverrides": {},
+  "disableBundledSkills": false,
+  "disableSkillShellExecution": false,
+  "syncClaudeAiSkills": true,
+  "syncClaudeAiPlugins": true,
+
+  "enableAllProjectMcpServers": false,
+  "enabledMcpjsonServers": [],
+  "disabledMcpjsonServers": [],
+  "deniedMcpServers": [],
+  "disableClaudeAiConnectors": false,
+
+  "crossSessionInbound": "hold",
+  "isolatePeerMachines": true,
+  "disableAgentView": false,
+  "teammateMode": "auto",
+  "worktree": {
+    "baseRef": "fresh",
+    "bgIsolation": "worktree",
+    "symlinkDirectories": [],
+    "sparsePaths": []
+  },
+
+  "agentPushNotifEnabled": true,
+  "inputNeededNotifEnabled": true,
+  "preferredNotifChannel": "auto",
+  "awaySummaryEnabled": true,
   "remoteControlAtStartup": true,
-  "agentPushNotifEnabled": true
+  "disableRemoteControl": false,
+  "enableArtifact": true,
+  "sshConfigs": [],
+
+  "autoUpdatesChannel": "latest",
+  "cleanupPeriodDays": 30,
+  "desktopSessionCleanupPeriodDays": 30,
+  "feedbackDrafts": "notify",
+  "skipWebFetchPreflight": false
 }
