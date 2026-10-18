@@ -27,63 +27,10 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(npm run lint)",
-      "Bash(npm run test *)"
-    ],
-    "ask": [
-      "Bash(git push *)",
-      "Bash(npm publish *)"
-    ],
-    "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(~/.ssh/**)",
-      "Read(~/.aws/**)",
-      "Read(~/.config/gcloud/**)"
-    ]
-  },
-  "autoMode": {
-    "classifyAllShell": true,
-    "soft_deny": [
-      "$defaults",
-      "Never delete files outside the current repository"
-    ]
-  },
-  "useAutoModeDuringPlan": true,
-  "skipAutoPermissionPrompt": true,
-  "permissions": {
-    "defaultMode": "auto",
-    "allow": [
-      "Bash(git status)",
-      "Bash(git diff *)",
-      "Bash(git log *)",
-      "Bash(npm run lint)",
-      "Bash(npm run test *)"
+      "Bash(npm run test *)",
       "Bash(sudo pacman *)",
       "Bash(pm *)"
     ],
-    "ask": [
-      "Bash(git push *)",
-      "Bash(npm publish *)"
-    ],
-    "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(~/.ssh/**)",
-      "Read(~/.aws/**)",
-      "Read(~/.config/gcloud/**)"
-    ]
-  },
-  "autoMode": {
-    "classifyAllShell": true,
-    "soft_deny": [
-      "$defaults",
-      "Never delete files outside the current repository"
-    ]
-  },
-  "useAutoModeDuringPlan": true,
-  "skipAutoPermissionPrompt": true,
-  "permissions": {
-    "defaultMode": "auto",
     "ask": [
       "Bash(git push *)",
       "Bash(gh pr create *)",
@@ -96,9 +43,19 @@
       "Read(./.env.*)",
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)",
       "Read(~/.gnupg/**)"
     ]
   },
+  "autoMode": {
+    "classifyAllShell": true,
+    "soft_deny": [
+      "$defaults",
+      "Never delete files outside the current repository"
+    ]
+  },
+  "useAutoModeDuringPlan": true,
+  "skipAutoPermissionPrompt": true,
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": true,
@@ -133,6 +90,7 @@
         "objects.githubusercontent.com"
       ]
     }
+  },
   "anchorSoFar": true,
   "voice": {
     "enabled": true,
