@@ -1,4 +1,26 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "model": "opus",
+  "fallbackModel": ["sonnet", "haiku"],
+
+  "modelSettings": {
+    "claude-opus-5-5": { "effortLevel": "high" },
+    "claude-sonnet-5-5": { "effortLevel": "high" },
+    "claude-haiku-5-5": { "effortLevel": "medium" }
+  },
+
+  "modelPicker": {
+    "options": [
+      { "model": "opus", "label": "Opus", "description": "Main work, design, hard bugs" },
+      { "model": "sonnet", "label": "Sonnet", "description": "Lighter implementation, saving usage" },
+      { "model": "haiku", "label": "Haiku", "description": "Lookups and simple tasks" }
+    ],
+    "replaceBuiltInOptions": true
+  },
+
+  "language": "english",
+  "showThinkingSummaries": true,
   "permissions": {
     "allow": [
       "Bash(sudo pacman *)",
@@ -7,14 +29,11 @@
     "deny": [],
     "defaultMode": "auto"
   },
-  "model": "sonnet",
   "voice": {
     "enabled": true,
     "mode": "tap"
   },
   "theme": "auto",
   "remoteControlAtStartup": true,
-  "agentPushNotifEnabled": true,
-  "voiceEnabled": true,
-  "fast-mode": false
+  "agentPushNotifEnabled": true
 }
