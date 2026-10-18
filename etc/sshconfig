@@ -186,6 +186,12 @@ Host special-host
     KbdInteractiveAuthentication no
     GSSAPIAuthentication no
 
+# GitHub
+Host github.com
+    User git
+    IdentityFile ~/.ssh/202610041134
+    IdentitiesOnly yes
+
 ################################################################################
 # CATCH-ALL (Must be last)
 ################################################################################

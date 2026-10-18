@@ -90,6 +90,10 @@ a ng "git config --global --edit"
 
 e BUN_INSTALL "$HOME/.bun"
 p "$BUN_INSTALL/bin"
+e NPM_CONFIG_PREFIX "$HOME/.npm-global"
+p "$NPM_CONFIG_PREFIX/bin"
+e PNPM_HOME "$HOME/.local/share/pnpm"
+p "$PNPM_HOME"
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 e EDITOR "nvim"

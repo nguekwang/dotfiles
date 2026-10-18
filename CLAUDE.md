@@ -30,7 +30,7 @@ what is missing is set up. A second run is not a different code path, it is the
 same code path finding most of its work already done.
 
 - config files are symlinks, so re-linking is `ln -sfn` over itself
-- packages go through `pacman -S --needed`, `paru -Syu`, `bun upgrade`,
+- packages go through `pacman -S --needed`, `paru -Syu`, `claude update`,
   `uv self update`
 - the user account, timezone, NTP and the `wheel` sudoers drop-in are read
   before they are written
@@ -159,13 +159,6 @@ download files cannot be undone — they are declared in
 `list_step_irreversible`, and when one fails the run says so plainly rather
 than pretending to clean up.
 
-## Tests
-
-`./test/all` checks that `setup.sh` and the files it links still agree: every
-step has its function and its row below, every `link` source exists, and every
-file under `home/` and `etc/` is linked. It reads the checkout only. See
-[test/CLAUDE.md](test/CLAUDE.md).
-
 ## Requirements
 
 Arch Linux, and either root or a user in the `wheel` group. `sudo` is asked for
@@ -175,19 +168,11 @@ once, up front, and only if a step that needs it is going to run.
 
 | Step | Does |
 | --- | --- |
-| `package/pkg` | `base-devel`, `git`, `zsh`, `neovim` |
 | `repo/git_sync` | `git pull` in `~/dotfiles`, or `git clone` it there |
 | `system/account` | main user, shell, `wheel`, password, sudoers drop-in |
 | `system/time` | timezone and NTP |
-| `sysconfig/system_config` | `/etc` config, hyprctl guard, builds `paru` |
-| `userconfig/paru` | `paru.conf` |
-| `userconfig/chrome` | Chrome flags, managed policy, AUR install |
-| `repo/git_ssh` | `~/.ssh/config`, ed25519 key |
-| `userconfig/shell` | `.zshrc` |
-| `userconfig/claude` | `home/claude/settings.json` → `~/.claude/settings.json` (shared preferences and permissions; project hooks stay in each repository) |
-| `userconfig/nvim` | `init.lua`, lock file, `Lazy! restore` |
-| `userconfig/fcitx5` | profile, config, 9 addon confs |
-| `userconfig/hypr` | Hyprland, mako, foot, waybar, qutebrowser |
-| `package/node` | Bun, gemini-cli, codex |
+| `sysconfig/system_config` | hyprctl guard install |
+| `repo/git_ssh` | ed25519 key |
+| `userconfig/nvim` | `Lazy! restore` |
+| `package/claude` | Claude Code |
 | `package/python` | uv, ipython, keras, matplotlib |
-| `userconfig/git_config` | `.gitconfig`, `.githooks`, `.gitmessage` |

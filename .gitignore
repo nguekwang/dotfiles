@@ -1,11 +1,12 @@
 /*
 !/.gitignore
+!/ANDROID.md
 !/CLAUDE.md
 !/README.md
 !/etc/
 !/home/
 !/setup.sh
-!/test/
-
-SECRETS
-.env
+!/link.sh
+!/link.list
+!/pkg.sh
+!/pkg.list
