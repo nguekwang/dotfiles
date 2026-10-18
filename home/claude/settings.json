@@ -1,6 +1,5 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-
   "model": "opus",
   "fallbackModel": ["sonnet", "haiku"],
 
@@ -21,6 +20,69 @@
 
   "language": "english",
   "showThinkingSummaries": true,
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(npm run lint)",
+      "Bash(npm run test *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(npm publish *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)"
+    ]
+  },
+  "autoMode": {
+    "classifyAllShell": true,
+    "soft_deny": [
+      "$defaults",
+      "Never delete files outside the current repository"
+    ]
+  },
+  "useAutoModeDuringPlan": true,
+  "skipAutoPermissionPrompt": true,
+  "permissions": {
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(npm run lint)",
+      "Bash(npm run test *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(npm publish *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)"
+    ]
+  },
+  "autoMode": {
+    "classifyAllShell": true,
+    "soft_deny": [
+      "$defaults",
+      "Never delete files outside the current repository"
+    ]
+  },
+  "useAutoModeDuringPlan": true,
+  "skipAutoPermissionPrompt": true,
+  "anchorSoFar": true,
   "permissions": {
     "allow": [
       "Bash(sudo pacman *)",
