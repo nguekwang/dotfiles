@@ -4,7 +4,7 @@ name_main_user="${name_main_user:-nguekwang}"
 path_dot="$HOME/dotfiles"
 path_config="${XDG_CONFIG_HOME:-$HOME/.config}"
 path_etc="/etc"
-path_lock="${XDG_RUNTIME_DIR:-/tmp}/complete-works.lock"
+path_lock="${XDG_RUNTIME_DIR:-/tmp}/dotfiles.lock"
 name_time_zone="Asia/Tokyo"
 uri_aur="https://aur.archlinux.org/paru.git"
 uri_repo="https://github.com/nguekwang/dotfiles.git"
@@ -266,7 +266,7 @@ setup_git_config() {
     link user home/.gitconfig-paru "$HOME/.gitconfig-paru"
 }
 
-printf '\n%s\n\n' "complete-works Setup Script"
+printf '\n%s\n\n' "dotfiles Setup Script"
 
 case "$(id -u)" in
     0)

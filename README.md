@@ -1,4 +1,4 @@
-# complete-works
+# dotfiles
 
 Machine setup for Arch Linux. One POSIX `sh` script, no arguments, safe to run
 as many times as you like.

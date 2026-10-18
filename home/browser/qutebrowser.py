@@ -122,7 +122,7 @@ cc.item.selected.border.bottom = "#1e1e1e"
 
 # Downloads
 
-c.downloads.location.directory = '~/complete-works/storage/auto/download'
+c.downloads.location.directory = '~/dotfiles/storage/auto/download'
 c.downloads.location.prompt = False
 c.tabs.show = 'multiple'  # Prevent downloads bar from taking space
 
