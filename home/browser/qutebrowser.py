@@ -145,6 +145,9 @@ c.content.webrtc_ip_handling_policy = "all-interfaces"
 c.colors.webpage.darkmode.enabled = False
 c.colors.webpage.bg = '#000000'
 
+# Render PDFs with pdf.js (requires the pdf.js package)
+c.content.pdfjs = True
+
 c.qt.args = [
     "--enable-webrtc",
     "--enable-webrtc-remote-event-log",
