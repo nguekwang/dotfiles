@@ -1,10 +1,12 @@
 # dotfiles
 
-## Clean install
+## Installation by Device
 
-## WSL2
+### Clean install
 
-## Termux
+### WSL2
+
+### Termux
 ```sh
 pkg update && pkg upgrade
 pkg install proot-distro
@@ -21,3 +23,9 @@ proot-distro login arch
 ```sh
 termux-setup-storage
 ```
+
+## Common setup 
+
+### Account setup 
+
+### Installation of `dotfiles` repository
