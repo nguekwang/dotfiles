@@ -1,12 +1,23 @@
 # dotfiles
 
-Machine setup for Arch Linux. One POSIX `sh` script, no arguments, safe to run
-as many times as you like.
+## Clean install
 
+## WSL2
+
+## Termux
 ```sh
-sh setup.sh
+pkg update && pkg upgrade
+pkg install proot-distro
 ```
 
-Everything else — the philosophy behind the script, what a run prints, what it
-writes, how rollback works, and the list of steps — is in
-**[CLAUDE.md](CLAUDE.md)**.
+```sh
+proot-distro install https://mirrors.dotsrc.org/archlinuxarm/os/ArchLinuxARM-aarch64-latest.tar.gz --name arch
+```
+
+```sh
+proot-distro login arch
+```
+
+```sh
+termux-setup-storage
+```
