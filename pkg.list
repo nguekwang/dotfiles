@@ -1,9 +1,0 @@
-pacman base-devel
-pacman git
-pacman zsh
-pacman neovim
-pacman nodejs
-pacman npm
-pacman pnpm
-pacman bun
-aur google-chrome

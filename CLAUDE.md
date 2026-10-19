@@ -169,10 +169,20 @@ once, up front, and only if a step that needs it is going to run.
 | Step | Does |
 | --- | --- |
 | `repo/git_sync` | `git pull` in `~/dotfiles`, or `git clone` it there |
+| `sysconfig/pacman_config` | `pacman.conf`, `mirrorlist`, `makepkg.conf` links |
+| `package/pacman` | `list_pkg_pacman` through `pacman -S --needed` |
+| `package/aur` | paru, then `list_pkg_aur` |
 | `system/account` | main user, shell, `wheel`, password, sudoers drop-in |
 | `system/time` | timezone and NTP |
-| `sysconfig/system_config` | hyprctl guard install |
-| `repo/git_ssh` | ed25519 key |
-| `userconfig/nvim` | `Lazy! restore` |
+| `sysconfig/system_config` | locale, console, sysctl, ssh keepalive links, hyprctl guard install |
+| `userconfig/paru_conf` | paru config link |
+| `userconfig/chrome` | Chrome flags and policy links |
+| `repo/git_ssh` | ssh config link, ed25519 key |
+| `userconfig/shell` | `.zshrc` link |
+| `userconfig/claude_config` | Claude Code settings link |
+| `userconfig/nvim` | nvim links, `Lazy! restore` |
+| `userconfig/fcitx5` | fcitx5 config links |
+| `userconfig/hypr` | hypr, mako, foot, waybar, qutebrowser links |
+| `userconfig/git_config` | git config, hooks, message template links |
 | `package/claude` | Claude Code |
 | `package/python` | uv, ipython, keras, matplotlib |
