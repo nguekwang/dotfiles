@@ -1,28 +1,29 @@
 #!/bin/sh
 set -e
-path_dot="$HOME/dotfiles"
-path_config="${XDG_CONFIG_HOME:-$HOME/.config}"
+. "$(dirname "$0")/run"
+path_config="${XDG_CONFIG_HOME:-$path_home/.config}"
 path_etc="/etc"
-path_rows="$path_dot/links.list"
+path_rows="$path_dot/link-list"
 
-link() {
-    local src="$path_dot/$2"
-    local dst="$3"
-    local cmd_sudo=""
-    [ "$1" = sudo ] && cmd_sudo=sudo
+link() (
+    src="$path_dot/$2"
+    dst="$3"
     [ -e "$src" ] || [ -L "$src" ] || {
         printf 'error: link: source "%s" does not exist\n' "$2" >&2
         return 1
     }
-    $cmd_sudo mkdir -p "$(dirname "$dst")"
-    $cmd_sudo ln -sfn "$src" "$dst"
-}
+    if [ -d "$dst" ] && [ ! -L "$dst" ]; then
+        run "$1" rm -rf "$dst"
+    fi
+    run "$1" mkdir -p "$(dirname "$dst")"
+    run "$1" ln -sfn "$src" "$dst"
+)
 
 while read -r enum_mode path_src enum_root path_rel; do
     case "$enum_root" in
         etc) path_base="$path_etc" ;;
         config) path_base="$path_config" ;;
-        home) path_base="$HOME" ;;
+        home) path_base="$path_home" ;;
     esac
     link "$enum_mode" "$path_src" "$path_base/$path_rel"
 done < "$path_rows"

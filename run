@@ -1,0 +1,18 @@
+name_main_user="${name_main_user:-nguekwang}"
+if [ "$(id -u)" = 0 ]; then
+    path_home="$(getent passwd "$name_main_user" | cut -d: -f6)"
+else
+    path_home="$HOME"
+fi
+path_dot="$path_home/dotfiles"
+
+run() {
+    enum_as="$1"
+    shift
+    case "$enum_as:$(id -u)" in
+        sudo:0) "$@" ;;
+        sudo:*) sudo "$@" ;;
+        user:0) runuser -u "$name_main_user" -- "$@" ;;
+        user:*) "$@" ;;
+    esac
+}

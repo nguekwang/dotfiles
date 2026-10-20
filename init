@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+. "$(dirname "$0")/run"
+cd "$path_dot"
+run user sudo -v
+while kill -0 $$ 2>/dev/null; do
+    run user sudo -n -v
+    sleep 60
+done &
+pid_sudo=$!
+trap 'kill "$pid_sudo" 2>/dev/null' EXIT
+sh link
+sh pkg
