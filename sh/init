@@ -9,5 +9,5 @@ while kill -0 $$ 2>/dev/null; do
 done &
 pid_sudo=$!
 trap 'kill "$pid_sudo" 2>/dev/null' EXIT
-sh link
-sh pkg
+sh sh/link
+sh sh/pkg
