@@ -5,6 +5,9 @@
 ### Clean install
 
 ### WSL2
+```powershell
+wsl --install archlinux
+```
 
 ### Termux
 ```sh
@@ -27,5 +30,30 @@ termux-setup-storage
 ## Common setup 
 
 ### Account setup 
+Log in as root user
+```sh
+su -
+```
+Create user
+```sh
+# If you are new
+sudo useradd -m -G wheel -s "$(command -v zsh)" nguekwang
 
-### Installation of `dotfiles` repository
+# If you are not new
+sudo usermod -a -G wheel -s "$(command -v zsh)" nguekwang
+```
+
+### Configuration setup 
+
+Install git-related CLI tools
+```sh
+sudo pacman -Syu --noconfirm --needed git github-cli
+```
+Clone `dotfiles` directory
+```sh
+git clone https://github.com/nguekwang/dotfiles.git
+```
+
+```sh
+git remote set-url origin git@github.com:nguekwang/dotfiles.git
+```
