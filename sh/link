@@ -3,7 +3,7 @@ set -e
 . "$(dirname "$0")/run"
 path_config="${XDG_CONFIG_HOME:-$path_home/.config}"
 path_etc="/etc"
-path_rows="$path_dot/link-list"
+path_rows="$path_dot/sh/link-list"
 
 link() (
     src="$path_dot/$2"

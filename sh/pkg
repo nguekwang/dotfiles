@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 . "$(dirname "$0")/run"
-path_rows="$path_dot/pkg-list"
+path_rows="$path_dot/sh/pkg-list"
 uri_aur="https://aur.archlinux.org/paru.git"
 list_pacman=""
 list_aur=""
