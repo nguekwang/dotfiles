@@ -5,7 +5,6 @@
 
 [core]
 	editor = nvim
-	pager = nvim -R
 	ignorecase = false
 	excludesFile = ~/.gitignore-global
 	hooksPath = ~/.githooks
