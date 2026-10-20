@@ -6,6 +6,17 @@ local terminal = "foot"
 -- binding below, for the keyboard-driven browsing it is better at.
 local browser  = "google-chrome-stable"
 local browser_alt = "qutebrowser"
+-- Starts qutebrowser only when no qutebrowser process exists yet. Checking
+-- for a mapped window is not enough: between the exec and the window
+-- appearing there is no window, so a second exec in that gap reaches the
+-- running instance over IPC and opens a second window. The flock serializes
+-- concurrent spawns and is held by qutebrowser for its whole lifetime;
+-- qute_respawn waits for it, so a relaunch after the last window closes
+-- starts once the old process has actually exited.
+local qute_guard = [[ sh -c 'pgrep -u "$(id -u)" -x qutebrowser >/dev/null || exec qutebrowser']]
+local qute_lock = [[ "${XDG_RUNTIME_DIR:-/tmp}/qutebrowser.lock"]]
+local qute_spawn = "flock -n" .. qute_lock .. qute_guard
+local qute_respawn = "flock -w 10" .. qute_lock .. qute_guard
 local editor   = "nvim"
 
 hl.on("hyprland.start", function ()
@@ -27,7 +38,7 @@ hl.on("hyprland.start", function ()
     -- the "qute" special workspace below) -- running from login means the
     -- toggle only ever has to show/hide an already-running window instead of
     -- paying launch latency.
-    hl.exec_cmd(browser_alt)
+    hl.exec_cmd(qute_spawn)
     -- The secret service Chrome stores passwords through. `libsecret` is only the
     -- client library; without a daemon answering `org.freedesktop.secrets` the
     -- `--password-store=gnome-libsecret` flag has nowhere to write, and Chrome
@@ -188,6 +199,29 @@ hl.on("window.open", function(win)
   end
 end)
 
+-- Keeps exactly one qutebrowser running at all times. qutebrowser is already
+-- single-process (a second `qutebrowser` call only opens a window in the
+-- running one over IPC), so the only gap is it exiting when its last window
+-- closes -- SUPER+q, `:quit`, or a crash. Relaunching then puts a fresh
+-- window back on the hidden "qute" special workspace, so closing it reads as
+-- hiding the overlay rather than losing it.
+local qute_class = "org.qutebrowser.qutebrowser"
+
+local function qute_running(except)
+  for _, w in ipairs(hl.get_windows({ class = qute_class })) do
+    if not except or w.address ~= except.address then
+      return true
+    end
+  end
+  return false
+end
+
+hl.on("window.close", function(win)
+  if win and win.class == qute_class and not qute_running(win) then
+    hl.exec_cmd(qute_respawn)
+  end
+end)
+
 -- Screenshot (1: area, 2: full), screen record (3: area, 4: full, 5: stop)
 local pictureDir = "~/horrea/capture/picture"
 local recordDir  = "~/horrea/capture/record"
@@ -256,10 +290,18 @@ hl.bind(main .. " + j", hl.dsp.focus({ direction = "down" }), { description = "F
 hl.bind(main .. " + k", hl.dsp.focus({ direction = "up" }), { description = "Focus up" })
 hl.bind(main .. " + l", hl.dsp.focus({ direction = "right" }), { description = "Focus right" })
 
-hl.bind(main .. " + comma", hl.dsp.workspace.toggle_special("qute"),
-  { description = "Toggle qutebrowser overlay" })
+hl.bind(main .. " + comma", function()
+  hl.exec_cmd(qute_spawn)
+  hl.dispatch(hl.dsp.workspace.toggle_special("qute"))
+end, { description = "Toggle qutebrowser overlay" })
 hl.bind(main .. " + SHIFT + semicolon", hl.dsp.exec_cmd(browser_alt),
   { description = "Browser (qutebrowser)" })
-hl.bind(main .. " + Return", hl.dsp.exec_cmd(terminal), { description = "Terminal" })
+-- While the qutebrowser overlay is shown, the terminal bind spawns nothing at
+-- all rather than starting foot and moving its window away afterwards.
+hl.bind(main .. " + Return", function()
+  if not hl.get_active_special_workspace() then
+    hl.exec_cmd(terminal)
+  end
+end, { description = "Terminal (not over the overlay)" })
 hl.bind(main .. " + m", hl.dsp.window.fullscreen(), { description = "Full screen" })
 hl.bind(main .. " + q", hl.dsp.window.close(), { description = "Close window" })
