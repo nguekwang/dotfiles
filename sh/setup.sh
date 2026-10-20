@@ -93,7 +93,7 @@ setup_python() {
 }
 
 setup_account() {
-    path_shell="$(command -v zsh)"
+    path_shell="$(command -v bash)"
     if id "$name_main_user" >/dev/null 2>&1; then
         sudo usermod -aG wheel -s "$path_shell" "$name_main_user"
     else

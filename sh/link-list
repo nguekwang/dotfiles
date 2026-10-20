@@ -14,7 +14,8 @@ sudo etc/chrome-policy-restore-tabs.json etc opt/chrome/policies/managed/restore
 user etc/sshconfig home .ssh/config
 user home/paru/paru.conf config paru/paru.conf
 user home/browser/chrome-flags.conf config chrome-flags.conf
-user home/.zshrc home .zshrc
+user home/.bashrc home .bashrc
+user home/.bash_profile home .bash_profile
 user home/claude/settings.json home .claude/settings.json
 user home/nvim/init.lua config nvim/init.lua
 user home/nvim/lazylock.json config nvim/lazylock.json

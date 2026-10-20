@@ -37,10 +37,10 @@ su -
 Create user
 ```sh
 # If you are new
-sudo useradd -m -G wheel -s "$(command -v zsh)" nguekwang
+sudo useradd -m -G wheel -s "$(command -v bash)" nguekwang
 
 # If you are not new
-sudo usermod -a -G wheel -s "$(command -v zsh)" nguekwang
+sudo usermod -a -G wheel -s "$(command -v bash)" nguekwang
 ```
 
 ### Configuration setup 

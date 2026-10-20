@@ -7,42 +7,33 @@ p() { case ":$PATH:" in *":$1:"*) ;; *) export PATH="$1:$PATH" ;; esac; }
 s() { printf '%*s\n' "$(tput cols)" '' | tr ' ' '-'; }
 
 # CLI
-PS1='%~ $(git_prompt) '
+PS1='\w $(git_prompt) '
 git_prompt() {
   branch=$(git symbolic-ref --short HEAD 2>/dev/null) || return
   printf 'git:%s' "$branch"
 }
-CASE_SENSITIVE="true"
-HYPHEN_INSENSITIVE="true"
 
 # Vi mode
-bindkey -v
-export KEYTIMEOUT=1 # ms before an Esc-prefixed key is treated as a lone Esc (mode switch)
+set -o vi
+bind 'set keyseq-timeout 10' # ms before an Esc-prefixed key is treated as a lone Esc (mode switch)
 
-# vi mode drops the terminal's Home/End/Delete bindings; restore them via terminfo
-zmodload zsh/terminfo
-[[ -n "${terminfo[khome]}" ]] && bindkey "${terminfo[khome]}" beginning-of-line
-[[ -n "${terminfo[kend]}"  ]] && bindkey "${terminfo[kend]}"  end-of-line
-[[ -n "${terminfo[kdch1]}" ]] && bindkey "${terminfo[kdch1]}" delete-char
+# vi mode drops the terminal's Home/End/Delete bindings; restore them
+for keymap in vi-insert vi-command; do
+  bind -m "$keymap" '"\e[H": beginning-of-line'
+  bind -m "$keymap" '"\e[F": end-of-line'
+  bind -m "$keymap" '"\e[3~": delete-char'
+done
+unset keymap
 
 # Cursor shape reflects the current mode: block = normal, beam = insert
-function zle-keymap-select {
-  case $KEYMAP in
-    vicmd)      echo -ne '\e[1 q' ;;
-    viins|main) echo -ne '\e[5 q' ;;
-  esac
-}
-zle -N zle-keymap-select
-zle -N zle-line-init
-zle-line-init() { echo -ne '\e[5 q' }
+bind 'set show-mode-in-prompt on'
+bind 'set vi-cmd-mode-string "\1\e[1 q\2"'
+bind 'set vi-ins-mode-string "\1\e[5 q\2"'
 
 if ! pgrep -x "Hyprland" > /dev/null; then
   start-hyprland
 fi
-eval "$(direnv hook zsh)"
-
-# bun completions
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+eval "$(direnv hook bash)"
 
 ## Basic command
 a c "cd $HOME/pjt-build-complete-works/ && claude --chrome"
@@ -81,8 +72,8 @@ a gsu "git remote rename"
 a gsd "git remote remove"
 
 # CLI configuration
-a nr "nvim ~/.zshrc"
-a rr "source ~/.zshrc"
+a nr "nvim ~/.bashrc"
+a rr "source ~/.bashrc"
 a nn "nvim ~/.config/nvim/init.lua"
 a nnc "nvim ~/.config/nvim/lua/core.lua"
 a nnp "nvim ~/.config/nvim/lua/plugins.lua"
@@ -94,7 +85,6 @@ e NPM_CONFIG_PREFIX "$HOME/.npm-global"
 p "$NPM_CONFIG_PREFIX/bin"
 e PNPM_HOME "$HOME/.local/share/pnpm"
 p "$PNPM_HOME"
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 e EDITOR "nvim"
 e VISUAL "nvim"
@@ -148,17 +138,16 @@ e SDL_IM_MODULE fcitx # SDL apps (mainly game apps)
 e IMSETTINGS_MODULE fcitx # Fedora Linux
 e INPUT_METHOD fcitx # OS default IM
 
-compinit -i
+[ -r /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion
 HISTSIZE=10000
-SAVEHIST=10000
-HISTFILE="$HOME/.log/zsh"
+HISTFILESIZE=10000
+HISTFILE="$HOME/.log/bash"
+HISTCONTROL=ignoredups
 
-setopt allexport
-setopt autocd
-setopt correct
-setopt hist_ignore_dups
-setopt hist_append
-setopt PROMPT_SUBST
+set -a
+shopt -s autocd
+shopt -s cdspell
+shopt -s histappend
 
 . "$HOME/.local/bin/env"
 
@@ -166,8 +155,8 @@ setopt PROMPT_SUBST
 [ -f "$HOME/dotfiles/.env" ] && source "$HOME/dotfiles/.env"
 
 # `and` used to be an alias (`a and ...`); unalias it first so re-sourcing
-# this file in a shell that still has that alias loaded doesn't break the
-# function definition below ("defining function based on alias `and'").
+# this file in a shell that still has that alias loaded doesn't expand the
+# alias inside the function definition below.
 unalias and 2>/dev/null
 
 and() {
