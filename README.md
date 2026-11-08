@@ -47,17 +47,17 @@ Log in as root user
 ```sh
 su -
 ```
-Install sudo
+Install sudo and zsh
 ```sh
-pacman -Syu --noconfirm --needed sudo
+pacman -Syu --noconfirm --needed sudo zsh
 ```
 Create user
 ```sh
 # If you are new
-sudo useradd -m -G wheel -s "$(command -v bash)" nguekwang
+sudo useradd -m -G wheel -s "$(command -v zsh)" nguekwang
 
 # If you are not new
-sudo usermod -a -G wheel -s "$(command -v bash)" nguekwang
+sudo usermod -a -G wheel -s "$(command -v zsh)" nguekwang
 ```
 Set the password
 ```sh
