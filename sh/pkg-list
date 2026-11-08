@@ -1,6 +1,6 @@
 pacman base-devel
 pacman git
-pacman bash-completion
+pacman zsh
 pacman neovim
 pacman nodejs
 pacman npm
