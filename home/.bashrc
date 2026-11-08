@@ -180,3 +180,8 @@ om() {
     echo "Invalid number."
   done
 }
+export PATH="$HOME/.local/bin:$PATH"
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/yunai/.local/bin:$PATH"
