@@ -51,13 +51,17 @@ Install sudo and zsh
 ```sh
 pacman -Syu --noconfirm --needed sudo zsh
 ```
-Create user
+Check whether the user exists (`no such user` means it does not)
 ```sh
-# If you are new
-sudo useradd -m -G wheel -s "$(command -v zsh)" nguekwang
+id nguekwang
+```
+Create the user
+```sh
+# If it does not exist
+useradd -m -G wheel -s "$(command -v zsh)" nguekwang
 
-# If you are not new
-sudo usermod -a -G wheel -s "$(command -v zsh)" nguekwang
+# If it exists
+usermod -a -G wheel -s "$(command -v zsh)" nguekwang
 ```
 Set the password
 ```sh
@@ -84,11 +88,6 @@ su - nguekwang
 Install git-related CLI tools
 ```sh
 sudo pacman -Syu --noconfirm --needed git github-cli openssh
-```
-Check the required commands and that the AUR is reachable
-```sh
-command -v pacman curl timedatectl ssh-keygen
-curl -fsS -o /dev/null --max-time 10 https://aur.archlinux.org
 ```
 Clone `dotfiles` directory
 ```sh
