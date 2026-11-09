@@ -13,8 +13,17 @@ while read -r enum_source name_pkg; do
     esac
 done < "$path_rows"
 
+list_old="$(pacman -Q)"
+
+report() {
+    list_new="$(pacman -Q)"
+    printf '%s\n' "$list_new" | grep -vxF "$list_old" | sed 's/^/info: pkg: installed /' >&2
+    list_old="$list_new"
+    printf 'info: pkg: %s\n' "$1" >&2
+}
+
 run sudo pacman -Syu --needed --noconfirm $list_pacman >/dev/null
-printf 'info: pkg: packages installed\n' >&2
+report "packages installed"
 
 if command -v paru >/dev/null; then
     run user paru -Sua --noconfirm >/dev/null
@@ -30,8 +39,8 @@ for path_dest in "${PKGDEST:-}" "${SRCDEST:-}" "${LOGDEST:-}" "${BUILDDIR:-}"; d
     [ -z "$path_dest" ] || mkdir -p "$path_dest"
 done'
     (cd "$path_work/paru" && run user makepkg -si --noconfirm >/dev/null)
-    printf 'info: pkg: paru installed\n' >&2
+    report "paru installed"
 fi
 
 run user paru -S --needed --noconfirm $list_aur >/dev/null
-printf 'info: pkg: aur packages installed\n' >&2
+report "aur packages installed"
