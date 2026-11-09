@@ -12,7 +12,6 @@ while kill -0 $$ 2>/dev/null; do
     run user sudo -n -v
     sleep 60
 done 9<&- &
-pid_sudo=$!
-trap 'kill "$pid_sudo" 2>/dev/null' EXIT
+trap 'kill "$!" 2>/dev/null' EXIT
 sh sh/link
 sh sh/pkg
