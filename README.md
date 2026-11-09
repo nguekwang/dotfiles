@@ -11,10 +11,15 @@ Check the connection
 ```sh
 ping -c 3 archlinux.org
 ```
-Sync the clock and set the time zone
+Sync the clock and set the time zone in the live environment (boot USB)
 ```sh
 timedatectl set-ntp true
 timedatectl set-timezone Asia/Tokyo
+```
+Set the time zone and enable NTP on the installed system (after rebooting into it, as root)
+```sh
+timedatectl set-timezone Asia/Tokyo
+timedatectl set-ntp true
 ```
 
 ### WSL2
@@ -72,11 +77,6 @@ Allow `wheel` to use sudo
 printf '%%wheel ALL=(ALL:ALL) ALL\n' > /etc/sudoers.d/10-wheel
 chmod 0440 /etc/sudoers.d/10-wheel
 visudo -c
-```
-Set the time zone and enable NTP on the installed system
-```sh
-timedatectl set-timezone Asia/Tokyo
-timedatectl set-ntp true
 ```
 Log in as the user
 ```sh
