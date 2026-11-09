@@ -2,11 +2,16 @@
 set -e
 . "$(dirname "$0")/run"
 cd "$path_dot"
+exec 9<"$path_dot"
+flock -n 9 || {
+    printf 'error: init: another run is active, nothing was done\n' >&2
+    exit 1
+}
 run user sudo -v
 while kill -0 $$ 2>/dev/null; do
     run user sudo -n -v
     sleep 60
-done &
+done 9<&- &
 pid_sudo=$!
 trap 'kill "$pid_sudo" 2>/dev/null' EXIT
 sh sh/link

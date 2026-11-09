@@ -12,7 +12,7 @@ sh ~/dotfiles/sh/init
 
 | File | Does |
 | --- | --- |
-| `sh/init` | refreshes `sudo` for the whole run, then runs `sh/link` and `sh/pkg` |
+| `sh/init` | locks `~/dotfiles` against a second run, refreshes `sudo` for the whole run, then runs `sh/link` and `sh/pkg` |
 | `sh/link` | symlinks every row of `sh/link-list` into place |
 | `sh/pkg` | installs every row of `sh/pkg-list` with pacman or paru |
 | `sh/run` | sourced by the others: `path_home`, `path_dot` and `run` |

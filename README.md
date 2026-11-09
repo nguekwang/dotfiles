@@ -93,9 +93,9 @@ Clone `dotfiles` directory
 ```sh
 git clone https://github.com/nguekwang/dotfiles.git ~/dotfiles
 ```
-Link configs and install packages (the lock refuses a second run while one is active)
+Link configs and install packages (a second run while one is active stops with an error)
 ```sh
-flock -n "${XDG_RUNTIME_DIR:-/tmp}/dotfiles.lock" sh ~/dotfiles/sh/init
+sh ~/dotfiles/sh/init
 ```
 Guard hyprctl (only if Hyprland was installed before the link; the pacman hook does it afterwards)
 ```sh
@@ -149,7 +149,7 @@ git -C ~/dotfiles pull --ff-only
 ```
 Re-link configs and upgrade packages
 ```sh
-flock -n "${XDG_RUNTIME_DIR:-/tmp}/dotfiles.lock" sh ~/dotfiles/sh/init
+sh ~/dotfiles/sh/init
 ```
 Upgrade Claude Code, uv and Python tools
 ```sh
