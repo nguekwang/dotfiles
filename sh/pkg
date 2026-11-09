@@ -34,3 +34,4 @@ done'
 fi
 
 run user paru -S --needed --noconfirm $list_aur >/dev/null
+printf 'info: pkg: aur packages installed\n' >&2
