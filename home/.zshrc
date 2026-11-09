@@ -36,10 +36,10 @@ zle -N zle-keymap-select
 zle -N zle-line-init
 zle-line-init() { echo -ne '\e[5 q' }
 
-if ! pgrep -x "Hyprland" > /dev/null; then
+if command -v start-hyprland > /dev/null && ! pgrep -x "Hyprland" > /dev/null; then
   start-hyprland
 fi
-eval "$(direnv hook zsh)"
+command -v direnv > /dev/null && eval "$(direnv hook zsh)"
 
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
@@ -148,9 +148,10 @@ e SDL_IM_MODULE fcitx # SDL apps (mainly game apps)
 e IMSETTINGS_MODULE fcitx # Fedora Linux
 e INPUT_METHOD fcitx # OS default IM
 
-compinit -i
+autoload -Uz compinit && compinit -i
 HISTSIZE=10000
 SAVEHIST=10000
+mkdir -p "$HOME/.log"
 HISTFILE="$HOME/.log/zsh"
 
 setopt allexport
@@ -160,7 +161,7 @@ setopt hist_ignore_dups
 setopt hist_append
 setopt PROMPT_SUBST
 
-. "$HOME/.local/bin/env"
+[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
 
 # SSH to android
 [ -f "$HOME/dotfiles/.env" ] && source "$HOME/dotfiles/.env"
@@ -191,8 +192,4 @@ om() {
     echo "Invalid number."
   done
 }
-export PATH="$HOME/.local/bin:$PATH"
-
-
-# Added by Antigravity CLI installer
-export PATH="/home/yunai/.local/bin:$PATH"
+p "$HOME/.local/bin"
