@@ -50,8 +50,34 @@ a n  "nvim"
 a r  "nvim -R"
 a cp "cp -i"
 a mv "mv -i"
-a l  "ls -ahF --color=always"
-a ll "ls -alhiF --color=always"
+
+# names only
+l() {
+  tree -L "${1:-2}" \
+    -a -C -F \
+    --dirsfirst \
+    --noreport \
+    -I 'node_modules|.git|vendor|__pycache__'
+}
+
+ls() {
+  tree -L "${1:-2}" \
+    -a -C -F \
+    --dirsfirst \
+    --noreport \
+    -I 'node_modules|.git|vendor|__pycache__'
+}
+
+# Detailed metadata
+ll() {
+  tree -L "${1:-2}" \
+    -a -C -F \
+    -pughsD \
+    --dirsfirst \
+    -I 'node_modules|.git|vendor|__pycache__'
+}
+
+# Tree-based ls
 # systemctl helpers
 a ss "sudo SYSTEMD_EDITOR=/usr/bin/nvim systemctl"
 sl()  { systemctl list-units      --state="${1:-}" "${@:2}"; }
