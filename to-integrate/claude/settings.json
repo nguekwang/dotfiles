@@ -1,0 +1,80 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sudo pacman *)",
+      "Bash(pm *)"
+    ],
+    "deny": [],
+    "defaultMode": "auto"
+  },
+  "model": "sonnet",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'f=\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/git/install-hooks.sh\"; [ -r \"$f\" ] || exit 0; cd \"${CLAUDE_PROJECT_DIR:-.}\" && sh \"$f\" >/dev/null 2>&1 || echo \"[hook: git/install-hooks] install-hooks.sh failed; run sh .claude/hooks/git/install-hooks.sh by hand.\"'",
+            "timeout": 30,
+            "statusMessage": "Installing the git pre-rebase hook"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/list-open-issues.py\"",
+            "timeout": 30,
+            "statusMessage": "Listing open issues"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/guard-write.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking file placement policy"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/guard-git.py\"",
+            "timeout": 15,
+            "statusMessage": "Checking version-control policy"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/export-transcript.py\"",
+            "timeout": 30,
+            "statusMessage": "Saving the session log"
+          }
+        ]
+      }
+    ]
+  },
+  "voice": {
+    "enabled": true,
+    "mode": "tap"
+  },
+  "theme": "auto",
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true,
+  "fast-mode": false
+}

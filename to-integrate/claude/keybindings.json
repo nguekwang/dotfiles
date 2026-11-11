@@ -1,0 +1,23 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-keybindings.json",
+  "$docs": "https://code.claude.com/docs/en/keybindings",
+  "bindings": [
+    {
+      "context": "Scroll",
+      "bindings": {
+        "pageup": "scroll:pageUp",
+        "pagedown": "scroll:pageDown"
+      }
+    },
+    {
+      "context": "Chat",
+      "bindings": {
+        "meta+g": "voice:pushToTalk",
+        "space": null,
+        "ctrl+g": "voice:pushToTalk",
+        "ctrl+e": "chat:externalEditor",
+        "ctrl+x ctrl+e": null
+      }
+    }
+  ]
+}

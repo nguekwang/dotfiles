@@ -1,0 +1,41 @@
+name: Review pull request
+run-name: Review ${{ github.event.pull_request.title }}
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions: {}
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+    env:
+      HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - name: Skip until the secret exists
+        if: env.HAS_KEY != 'true'
+        run: echo "::notice::ANTHROPIC_API_KEY is not a repository secret yet, so the review is skipped (#63)."
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        if: env.HAS_KEY == 'true'
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@c3d45e8e941e1b2ad7b278c57482d9c5bf1f35b3 # v1.0.99
+        if: env.HAS_KEY == 'true'
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          use_sticky_comment: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request as the repository's `branch-review` skill prescribes.
+            1. Read `.claude/skills/branch-review/SKILL.md`, the sections "Review Lens" and "Severity and Verdict", and the skills those sections name.
+            2. Read the diff with `gh pr diff` and the description with `gh pr view`.
+            3. Judge the change against every item of the lens. For each item that fails, write one finding naming the lens item, the file and line, the severity, and the concrete change that would resolve it.
+            4. Post one comment (the sticky comment) with the verdict first, approve or request changes, then the findings. Post an inline comment only for a blocking finding.
+            Do not approve or merge through GitHub, do not edit files, and do not run anything but the `gh` commands above.
+          claude_args: '--allowed-tools "Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),mcp__github_inline_comment__create_inline_comment" --max-turns 30'

@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+# Parse a Rakuten Bank 入出金明細 CSV export into daily net cash-flow JSON,
+# and optionally have Claude (via the Anthropic Messages API) analyze it.
+#
+# Usage:
+#   parse-cashflow fetch   <csv-file>                 # -> daily cash-flow JSON on stdout
+#   parse-cashflow analyze <csv-file> [question]       # -> Claude's analysis on stdout
+#
+# CSV export: Rakuten Bank internet banking -> 入出金明細 -> pick a date range
+# (<=24 months, <=3000 rows) -> "CSV形式でダウンロード". Columns expected:
+# 取引日, 入出金(円), 残高(円), 入出金先内容.
+set -euo pipefail
+
+SCRIPT_NAME=$(basename "$0")
+MODEL="claude-opus-5"
+
+usage() {
+  cat >&2 <<EOF
+Usage:
+  $SCRIPT_NAME fetch   <csv-file>
+  $SCRIPT_NAME analyze <csv-file> [question]
+
+  fetch    Parse the CSV into daily {date, income, expense, net, balance} JSON.
+  analyze  fetch + ask Claude Opus 5 to analyze the result (requires
+           ANTHROPIC_API_KEY, or 'ant auth login' credentials).
+EOF
+}
+
+require_tools() {
+  local missing=()
+  for t in jq curl gawk file iconv; do
+    command -v "$t" >/dev/null 2>&1 || missing+=("$t")
+  done
+  if [ "${#missing[@]}" -gt 0 ]; then
+    echo "Error: missing required tools: ${missing[*]}" >&2
+    echo "Install with: sudo pacman -S ${missing[*]}" >&2
+    exit 1
+  fi
+}
+
+# Normalize a Rakuten CSV export to UTF-8 text on stdout, stripping BOM/CRLF.
+to_utf8() {
+  local csv="$1"
+  local enc
+  enc=$(file -b --mime-encoding "$csv")
+  case "$enc" in
+    utf-8|us-ascii)
+      cat "$csv" ;;
+    *)
+      iconv -f SHIFT_JIS -t UTF-8//TRANSLIT "$csv" ;;
+  esac | sed '1s/^\xEF\xBB\xBF//' | tr -d '\r'
+}
+
+# Emit tab-separated (date, amount, balance, desc) rows from CSV text on stdin.
+csv_to_tsv() {
+  gawk -F',' -v FPAT='[^,]*|"[^"]*"' -v OFS='\t' '
+    NR == 1 { next }
+    NF < 3 { next }
+    {
+      date = $1; gsub(/"/, "", date); gsub(/\//, "-", date)
+      amt  = $2; gsub(/"/, "", amt);  gsub(/,/, "", amt)
+      bal  = $3; gsub(/"/, "", bal);  gsub(/,/, "", bal)
+      desc = (NF >= 4 ? $4 : ""); gsub(/"/, "", desc)
+      if (date !~ /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) next
+      print date, amt, bal, desc
+    }
+  '
+}
+
+# Aggregate TSV rows (stdin) into per-day cash-flow JSON.
+tsv_to_daily_json() {
+  jq -R -s '
+    split("\n") | map(select(length > 0) | split("\t")) |
+    map({date: .[0], amount: (.[1] | tonumber), balance: (.[2] | tonumber), desc: (.[3] // "")}) |
+    group_by(.date) |
+    map({
+      date: .[0].date,
+      income: ([.[] | select(.amount > 0) | .amount] | add // 0),
+      expense: ([.[] | select(.amount < 0) | .amount] | add // 0),
+      net: ([.[] | .amount] | add),
+      balance: (.[-1].balance),
+      transactions: length
+    }) |
+    sort_by(.date)
+  '
+}
+
+cmd_fetch() {
+  local csv="${1:?csv file required}"
+  [ -f "$csv" ] || { echo "Error: no such file: $csv" >&2; exit 1; }
+  to_utf8 "$csv" | csv_to_tsv | tsv_to_daily_json
+}
+
+# Populate global array AUTH_HEADERS with curl -H args for Anthropic auth.
+resolve_auth_headers() {
+  if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+    AUTH_HEADERS=(-H "x-api-key: $ANTHROPIC_API_KEY")
+    return
+  fi
+  if command -v ant >/dev/null 2>&1 && ant auth status >/dev/null 2>&1; then
+    local token
+    token=$(ant auth print-credentials --access-token)
+    AUTH_HEADERS=(-H "Authorization: Bearer $token" -H "anthropic-beta: oauth-2025-04-20")
+    return
+  fi
+  echo "Error: no Anthropic credentials found. Set ANTHROPIC_API_KEY or run 'ant auth login'." >&2
+  exit 1
+}
+
+cmd_analyze() {
+  local csv="${1:?csv file required}"
+  local question="${2:-Summarize the daily cash-flow trend, call out any unusual days (large income or expense spikes), and give one or two concrete suggestions.}"
+
+  local daily_json
+  daily_json=$(cmd_fetch "$csv")
+
+  local AUTH_HEADERS
+  resolve_auth_headers
+
+  local payload
+  payload=$(jq -n \
+    --arg model "$MODEL" \
+    --arg question "$question" \
+    --argjson data "$daily_json" \
+    '{
+      model: $model,
+      max_tokens: 4096,
+      system: "You are a personal finance analyst. You are given a JSON array of daily cash-flow rows (date, income, expense as a negative number, net, end-of-day balance, transaction count) parsed from a Japanese bank statement. Answer concisely and concretely, referencing specific dates.",
+      messages: [{
+        role: "user",
+        content: ($question + "\n\nDaily cash flow JSON:\n" + ($data | tojson))
+      }]
+    }')
+
+  local response
+  response=$(curl -sS https://api.anthropic.com/v1/messages \
+    "${AUTH_HEADERS[@]}" \
+    -H "Content-Type: application/json" \
+    -H "anthropic-version: 2023-06-01" \
+    -d "$payload")
+
+  if [ "$(echo "$response" | jq -r '.type // empty')" = "error" ]; then
+    echo "Error from Anthropic API:" >&2
+    echo "$response" | jq -r '.error.message // .' >&2
+    exit 1
+  fi
+
+  echo "$response" | jq -r '.content[] | select(.type == "text") | .text'
+}
+
+main() {
+  require_tools
+  local cmd="${1:-}"
+  case "$cmd" in
+    fetch)   shift; cmd_fetch "$@" ;;
+    analyze) shift; cmd_analyze "$@" ;;
+    -h|--help|"") usage; [ "$cmd" = "" ] && exit 1 || exit 0 ;;
+    *) echo "Unknown command: $cmd" >&2; usage; exit 1 ;;
+  esac
+}
+
+main "$@"

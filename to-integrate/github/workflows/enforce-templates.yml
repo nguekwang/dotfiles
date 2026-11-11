@@ -1,0 +1,50 @@
+name: Enforce templates
+run-name: ${{ github.event.issue.title || github.event.pull_request.title }}
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+permissions: {}
+jobs:
+  issue:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const { title, body, number } = context.payload.issue;
+            const text = body || '';
+            const problems = [];
+            // A regex cannot tell a verb from a noun; this is a capitalization heuristic.
+            if (!/^[A-Z][A-Za-z-]+ \S/.test(title)) problems.push('Title must be "<Verb> <object>" (capitalized verb infinitive + object).');
+            for (const h of ['### Why', '### What', '### Done when']) {
+              if (!text.includes(h)) problems.push(`Body is missing "${h}".`);
+            }
+            if (!text.trimStart().startsWith('### Why')) problems.push('"### Why" must be the first heading.');
+            if (problems.length) {
+              const { owner, repo } = context.repo;
+              await github.rest.issues.createComment({ owner, repo, issue_number: number,
+                body: 'Closed: does not follow the issue template. Refile it corrected.\n\n- ' + problems.join('\n- ') });
+              await github.rest.issues.update({ owner, repo, issue_number: number,
+                state: 'closed', state_reason: 'not_planned' });
+            }
+  pull-request:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            const problems = [];
+            if (!/^(Closes #\d+|No issue: [^<\s])/m.test(body)) problems.push('Body must contain "Closes #<n>" or "No issue: <reason>".');
+            for (const h of ['## Why', '## Changes', '## Verification']) {
+              if (!body.includes(h)) problems.push(`Body is missing "${h}".`);
+            }
+            if (!body.trimStart().startsWith('## Why')) problems.push('"## Why" must be the first line.');
+            if (problems.length) core.setFailed(problems.join(' '));
