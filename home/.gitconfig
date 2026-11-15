@@ -1,7 +1,7 @@
 # This is Git's per-user configuration file.
 [user]
 	name = "nguekwang"
-	email = "nguekwang@users.noreply.github.com"
+	email = "250810501+nguekwang@users.noreply.github.com"
 
 [core]
 	editor = nvim
@@ -55,3 +55,9 @@
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential

@@ -1,4 +1,16 @@
+from qutebrowser.utils import message, usertypes
+
 config.load_autoconfig(False)
+
+# Suppress error message bars above the statusbar
+_orig_bridge_show = getattr(message.global_bridge, "_orig_show", message.global_bridge.show)
+message.global_bridge._orig_show = _orig_bridge_show
+def _show_without_errors(level, *args, **kwargs):
+    if level == usertypes.MessageLevel.error:
+        return
+    return _orig_bridge_show(level, *args, **kwargs)
+message.global_bridge.show = _show_without_errors
+message.global_bridge.clear_messages.emit()
 
 # Palette: black backgrounds everywhere; accents only as dark foregrounds
 BLACK  = '#000000'
