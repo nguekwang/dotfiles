@@ -19,6 +19,13 @@ local qute_spawn = "flock -n" .. qute_lock .. qute_guard
 local qute_respawn = "flock -w 10" .. qute_lock .. qute_guard
 local editor   = "nvim"
 
+local alsa_headphone = [[python3 -c 'import ctypes; a=ctypes.CDLL("libasound.so.2"); c=ctypes.c_void_p(); a.snd_ctl_open(ctypes.byref(c),b"hw:0",0); a.snd_ctl_elem_id_sizeof.restype=a.snd_ctl_elem_value_sizeof.restype=ctypes.c_size_t;
+def s(n,t,v):
+ e=ctypes.create_string_buffer(a.snd_ctl_elem_id_sizeof()); a.snd_ctl_elem_id_set_numid(e,n); w=ctypes.create_string_buffer(a.snd_ctl_elem_value_sizeof()); a.snd_ctl_elem_value_set_id(w,e)
+ for i,x in enumerate(v): (a.snd_ctl_elem_value_set_integer if t else a.snd_ctl_elem_value_set_boolean)(w,i,x)
+ a.snd_ctl_elem_write(c,w)
+s(1,1,[87,87]); s(2,0,[1,1]); s(3,1,[0,0]); s(4,0,[1,1]); s(16,1,[87]); s(17,0,[1]); a.snd_ctl_close(c)' && wpctl set-mute @DEFAULT_AUDIO_SINK@ 0]]
+
 hl.on("hyprland.start", function ()
     -- Hand the session variables (WAYLAND_DISPLAY, HYPRLAND_INSTANCE_SIGNATURE,
     -- the fcitx IM variables) to the systemd user manager and the D-Bus
@@ -47,6 +54,10 @@ hl.on("hyprland.start", function ()
     -- `--start --components=secrets` brings up only the secret service, not the
     -- ssh or gpg agents, which this machine handles elsewhere.
     hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
+    -- Route ALSA hardware mixer to headphone out (volume 87/87, unmuted) and
+    -- silence the built-in speaker (volume 0/87) on Realtek ALC293 where
+    -- Front Headphone Jack presence detection stays false.
+    hl.exec_cmd(alsa_headphone)
 end)
 
 hl.env(
@@ -219,6 +230,56 @@ end
 hl.on("window.close", function(win)
   if win and win.class == qute_class and not qute_running(win) then
     hl.exec_cmd(qute_respawn)
+  end
+end)
+
+-- Disables the built-in panel (eDP-1) whenever any external monitor is
+-- connected, and re-enables it when the last external monitor is unplugged.
+-- `all = true` includes disabled outputs in hl.get_monitors(); `monitor.removed`
+-- fires inside CMonitor::onDisconnect before the unplugged output leaves
+-- allMonitors(), so `except` excludes the output being removed.
+local laptop_output = "eDP-1"
+
+local function external_connected(except)
+  for _, m in ipairs(hl.get_monitors({ all = true })) do
+    if m.name ~= laptop_output and (not except or m.name ~= except.name) then
+      return true
+    end
+  end
+  return false
+end
+
+local function sync_monitors(except)
+  if external_connected(except) then
+    hl.monitor({ output = laptop_output, disabled = true })
+  else
+    hl.monitor({
+      output   = laptop_output,
+      mode     = "preferred",
+      position = "auto",
+      scale    = "auto",
+      disabled = false,
+    })
+  end
+end
+
+hl.monitor({
+  output   = "",
+  mode     = "preferred",
+  position = "auto",
+  scale    = "auto",
+})
+sync_monitors()
+hl.on("monitor.added", function(mon)
+  if mon.name ~= laptop_output then
+    sync_monitors()
+    hl.reload()
+  end
+end)
+hl.on("monitor.removed", function(mon)
+  if mon.name ~= laptop_output then
+    sync_monitors(mon)
+    hl.reload()
   end
 end)
 

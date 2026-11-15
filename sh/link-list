@@ -35,6 +35,7 @@ user home/hypr/mako config mako/config
 user home/hypr/foot.ini config foot/foot.ini
 user home/hypr/waybar-config config waybar/config
 user home/hypr/waybar-style.css config waybar/style.css
+user home/hypr/wireplumber.conf config wireplumber/wireplumber.conf.d/50-alsa-headphone.conf
 user home/browser/qutebrowser.py config qutebrowser/config.py
 user home/.gitconfig home .gitconfig
 user home/.gitignore-global home .gitignore-global
