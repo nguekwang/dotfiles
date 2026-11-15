@@ -233,56 +233,6 @@ hl.on("window.close", function(win)
   end
 end)
 
--- Disables the built-in panel (eDP-1) whenever any external monitor is
--- connected, and re-enables it when the last external monitor is unplugged.
--- `all = true` includes disabled outputs in hl.get_monitors(); `monitor.removed`
--- fires inside CMonitor::onDisconnect before the unplugged output leaves
--- allMonitors(), so `except` excludes the output being removed.
-local laptop_output = "eDP-1"
-
-local function external_connected(except)
-  for _, m in ipairs(hl.get_monitors({ all = true })) do
-    if m.name ~= laptop_output and (not except or m.name ~= except.name) then
-      return true
-    end
-  end
-  return false
-end
-
-local function sync_monitors(except)
-  if external_connected(except) then
-    hl.monitor({ output = laptop_output, disabled = true })
-  else
-    hl.monitor({
-      output   = laptop_output,
-      mode     = "preferred",
-      position = "auto",
-      scale    = "auto",
-      disabled = false,
-    })
-  end
-end
-
-hl.monitor({
-  output   = "",
-  mode     = "preferred",
-  position = "auto",
-  scale    = "auto",
-})
-sync_monitors()
-hl.on("monitor.added", function(mon)
-  if mon.name ~= laptop_output then
-    sync_monitors()
-    hl.reload()
-  end
-end)
-hl.on("monitor.removed", function(mon)
-  if mon.name ~= laptop_output then
-    sync_monitors(mon)
-    hl.reload()
-  end
-end)
-
 -- Screenshot (1: area, 2: full), screen record (3: area, 4: full, 5: stop)
 local pictureDir = "~/horrea/capture/picture"
 local recordDir  = "~/horrea/capture/record"
