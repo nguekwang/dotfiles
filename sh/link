@@ -6,17 +6,17 @@ path_etc="/etc"
 path_rows="$path_dot/sh/link-list"
 
 link() (
-    src="$path_dot/$2"
-    dst="$3"
-    [ -e "$src" ] || [ -L "$src" ] || {
+    path_target="$path_dot/$2"
+    path_link="$3"
+    [ -e "$path_target" ] || [ -L "$path_target" ] || {
         printf 'error: link: source "%s" does not exist\n' "$2" >&2
         return 1
     }
-    if [ -d "$dst" ] && [ ! -L "$dst" ]; then
-        run "$1" rm -rf "$dst"
+    if [ -d "$path_link" ] && [ ! -L "$path_link" ]; then
+        run "$1" rm -rf "$path_link"
     fi
-    run "$1" mkdir -p "$(dirname "$dst")"
-    run "$1" ln -sfn "$src" "$dst"
+    run "$1" mkdir -p "$(dirname "$path_link")"
+    run "$1" ln -sfn "$path_target" "$path_link"
 )
 
 while read -r enum_mode path_src enum_root path_rel; do

@@ -2,7 +2,7 @@
 set -e
 . "$(dirname "$0")/run"
 path_rows="$path_dot/sh/pkg-list"
-uri_aur="https://aur.archlinux.org/paru.git"
+path_aur="https://aur.archlinux.org/paru.git"
 list_pacman=""
 list_aur=""
 
@@ -33,7 +33,7 @@ else
     trap 'exit 130' INT
     trap 'exit 143' TERM
     trap 'exit 129' HUP
-    run user git clone -q "$uri_aur" "$path_work/paru"
+    run user git clone -q "$path_aur" "$path_work/paru"
     run user bash -c '. /etc/makepkg.conf
 for path_dest in "${PKGDEST:-}" "${SRCDEST:-}" "${LOGDEST:-}" "${BUILDDIR:-}"; do
     [ -z "$path_dest" ] || mkdir -p "$path_dest"

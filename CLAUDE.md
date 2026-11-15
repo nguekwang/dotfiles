@@ -62,15 +62,18 @@ linear machine setup does not want. So there is no `Makefile`.
 Code that needs a comment to say what it does needs a better name instead. The
 scripts under `sh/` carry none:
 
-- every name states its type: `path_`, `name_`, `enum_`, `list_`, `uri_`,
-  `pid_`. You know what a variable holds before you read what it holds.
+- every name states its type, and there are only four: `path_` (a location:
+  a file path or a URL), `name_` (a free-form name: a user, a package),
+  `enum_` (one of a fixed set of values) and `list_` (space-separated values).
+  You know what a variable holds before you read what it holds. A value that
+  fits none of the four is used where it is made instead of being named.
 - what a step acts on lives in a list, so a script body is only the operations
   it performs.
 
 ### 5. Brief identifiers
 
 The prefix already states the type, so the rest of a name can be one word:
-`path_dot`, `path_rows`, `uri_aur`, `pid_sudo`. A name grows long only when it
+`path_dot`, `path_rows`, `path_aur`, `name_pkg`. A name grows long only when it
 has started doing a comment's job.
 
 Names that differ by one value are one function taking that value:
