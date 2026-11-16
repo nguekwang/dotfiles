@@ -1,5 +1,6 @@
 pacman base-devel
 pacman git
+pacman less
 pacman zsh
 pacman direnv
 pacman neovim

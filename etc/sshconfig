@@ -189,7 +189,7 @@ Host special-host
 # GitHub
 Host github.com
     User git
-    IdentityFile ~/.ssh/202610041134
+    IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 
 ################################################################################

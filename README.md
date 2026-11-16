@@ -133,7 +133,7 @@ ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
 ```
 Register it with GitHub
 ```sh
-gh auth login
+gh auth login -s admin:public_key
 gh ssh-key add ~/.ssh/id_ed25519.pub
 ```
 Push over SSH
