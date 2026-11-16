@@ -1,0 +1,33 @@
+name: Task
+description: One follow-up.
+title: "<Verb> <object>"
+body:
+  - type: markdown
+    attributes:
+      value: "Title = verb infinitive + object, e.g. `Move notes/languages/ to Google Drive`."
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: Goal in one line.
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: What to do, concretely.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: Files or skills touched.
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Completion condition.
+    validations:
+      required: true

@@ -1,3 +1,9 @@
+# If sourced from bash or another non-zsh shell, switch into zsh immediately
+if [ -z "${ZSH_VERSION:-}" ]; then
+  exec zsh
+  return 0 2>/dev/null || exit 0
+fi
+
 # Helper functions
 a() { alias "$1"="$2"; }
 e() { export "$1"="$2"; }

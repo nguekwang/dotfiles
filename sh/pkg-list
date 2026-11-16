@@ -16,4 +16,6 @@ pacman fcitx5
 pacman fcitx5-mozc
 pacman fcitx5-configtool
 pacman qutebrowser
+pacman bubblewrap
+pacman socat
 aur google-chrome

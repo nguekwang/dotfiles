@@ -1,0 +1,6 @@
+#!/bin/sh
+# Installed as <git common dir>/hooks/pre-rebase by install-hooks.sh.
+# Keep the repository's history merge-only, for manual git commands as much as
+# for the ones Claude Code runs.
+echo "[hook: git/guard-pre-rebase] Refused: rebasing rewrites history. Integrate work with a reviewed merge commit (rules-version-control)." >&2
+exit 1

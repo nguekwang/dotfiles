@@ -1,0 +1,73 @@
+name: Review sessions
+run-name: Weekly review of the session logs
+on:
+  schedule:
+    - cron: '17 21 * * 0'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: Session logs each script may process this run
+        default: '20'
+permissions: {}
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      LIMIT: ${{ inputs.limit || '20' }}
+    steps:
+      - name: Stop when the secret is missing
+        if: env.ANTHROPIC_API_KEY == ''
+        run: |
+          echo "::error::ANTHROPIC_API_KEY is not a repository secret (#63)."
+          exit 1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+      - run: npm install -g @anthropic-ai/claude-code
+      - name: Propose rule changes from the new session logs
+        run: python3 .claude/lib/weekly-review/reflect-sessions.py
+      - name: Grade the foreign-language prose of the new session logs
+        if: ${{ !cancelled() }}
+        run: python3 .claude/lib/weekly-review/grade-sessions.py
+      - name: Open a pull request with the results
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add -A .claude/rule-proposals silver-lake/polyglot
+          if git diff --cached --quiet; then
+            echo "Nothing new to commit."
+            exit 0
+          fi
+          day=$(date -u +%Y-%m-%d)
+          branch="$(date -u +%Y-%m-%d-%H-%M)-review_session-logs"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -q -F - <<EOF_MSG
+          Review the session logs up to $day
+
+          Weekly run of .github/workflows/review-sessions.yml: rule proposals from
+          reflect-sessions.py under .claude/rule-proposals/ and grades from
+          grade-sessions.py under silver-lake/polyglot/, with their ledgers.
+          EOF_MSG
+          git push -u origin "$branch"
+          cat > body.md <<EOF_BODY
+          ## Why
+          Weekly review of the session logs committed since the last run, per the \`rules-version-control\` skill's "Review" and the \`.claude/lib/weekly-review/\` scripts.
+
+          No issue: a scheduled run; the standing work is #64 and #65.
+
+          ## Changes
+          - Rule proposals under \`.claude/rule-proposals/\` for the sessions that warranted one, and the ledger \`reviewed.txt\`.
+          - Grades under \`silver-lake/polyglot/<lang>/log/\` for the sessions written in a language other than Japanese, and the ledger \`graded.txt\`.
+
+          ## Verification
+          The run log of this workflow lists one line per session log with its outcome.
+          EOF_BODY
+          gh pr create --base main --head "$branch" --title "Review the session logs up to $day" --body-file body.md

@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# Drive a running qutebrowser instance from the CLI, the way claude-in-chrome
+# drives Chrome -- but through qutebrowser's own IPC instead of a browser
+# extension, since qutebrowser (QtWebEngine) can't run Chrome extensions at
+# all. See .claude/lib/tools/drive-qutebrowser/CLAUDE.md for how this actually works and its
+# limits.
+#
+# Usage:
+#   drive-qutebrowser ensure              # launch qutebrowser if it isn't running yet
+#   drive-qutebrowser open <url>          # open a URL in a new tab
+#   drive-qutebrowser cmd <:command>      # send a raw qutebrowser command, e.g. ":back"
+#   drive-qutebrowser js <js-expression>  # eval JS in the current page, print the result
+#   drive-qutebrowser text                # current page's visible text (document.body.innerText)
+#   drive-qutebrowser url                 # current page's URL
+#   drive-qutebrowser title                # current page's title
+set -euo pipefail
+
+SCRIPT_NAME=$(basename "$0")
+LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/drive-qutebrowser"
+LOG_FILE="$LOG_DIR/qutebrowser.log"
+
+usage() {
+  cat >&2 <<EOF
+Usage:
+  $SCRIPT_NAME ensure
+  $SCRIPT_NAME open <url>
+  $SCRIPT_NAME cmd <qutebrowser-command>
+  $SCRIPT_NAME js <js-expression>
+  $SCRIPT_NAME text
+  $SCRIPT_NAME url
+  $SCRIPT_NAME title
+EOF
+  exit 1
+}
+
+is_running() {
+  pgrep -f '/usr/bin/python3 /usr/bin/qutebrowser' >/dev/null 2>&1
+}
+
+ensure() {
+  if is_running; then
+    return
+  fi
+  mkdir -p "$LOG_DIR"
+  # Every read command (js/text/url/title) depends on qutebrowser's own
+  # stdout being captured here -- jseval results have no other return
+  # channel back to a CLI caller, they only ever get printed as an INFO log
+  # line (verified live: `qutebrowser ":jseval document.title"` shows up as
+  # "HH:MM:SS INFO: <result>" in this file, nowhere else).
+  nohup qutebrowser >"$LOG_FILE" 2>&1 &
+  disown
+  for _ in $(seq 1 20); do
+    is_running && return
+    sleep 0.2
+  done
+  echo "drive-qutebrowser: qutebrowser did not start in time" >&2
+  exit 1
+}
+
+# Send a command via IPC and print the next INFO line qutebrowser logs
+# afterward -- this is how jseval's result gets back to us, since `qutebrowser
+# :command` is fire-and-forget over IPC with no response channel of its own.
+send_and_capture() {
+  local qcmd="$1"
+  ensure
+  if ! is_running; then
+    echo "drive-qutebrowser: qutebrowser isn't running under $SCRIPT_NAME (started some other way?) -- can't capture output, only $LOG_FILE is tailed" >&2
+  fi
+  local before
+  before=$(wc -l <"$LOG_FILE" 2>/dev/null || echo 0)
+  qutebrowser "$qcmd" >/dev/null 2>&1
+  for _ in $(seq 1 30); do
+    local after
+    after=$(wc -l <"$LOG_FILE" 2>/dev/null || echo 0)
+    if [ "$after" -gt "$before" ]; then
+      tail -n "$((after - before))" "$LOG_FILE" | grep -oP '(?<=INFO: ).*' | tail -n 1
+      return
+    fi
+    sleep 0.1
+  done
+  echo "drive-qutebrowser: no result within 3s (page may not have logged anything, or the command had no return value)" >&2
+  return 1
+}
+
+[ $# -ge 1 ] || usage
+cmd="$1"; shift || true
+
+case "$cmd" in
+  ensure)
+    ensure
+    ;;
+  open)
+    [ $# -ge 1 ] || usage
+    ensure
+    qutebrowser ":open -t $1"
+    ;;
+  cmd)
+    [ $# -ge 1 ] || usage
+    ensure
+    qutebrowser "$*"
+    ;;
+  js)
+    [ $# -ge 1 ] || usage
+    send_and_capture ":jseval --world main $*"
+    ;;
+  text)
+    send_and_capture ":jseval --world main document.body.innerText"
+    ;;
+  url)
+    send_and_capture ":jseval --world main location.href"
+    ;;
+  title)
+    send_and_capture ":jseval --world main document.title"
+    ;;
+  *)
+    usage
+    ;;
+esac
